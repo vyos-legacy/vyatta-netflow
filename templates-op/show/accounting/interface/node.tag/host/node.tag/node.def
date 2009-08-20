@@ -1,0 +1,4 @@
+help: Show flow accounting statistics for specified interface/host
+run: sudo /opt/vyatta/bin/sudo-users/vyatta-show-acct.pl --action 'show-host' \
+                                                         --intf "$4" \
+                                                         --host "$6"

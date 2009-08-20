@@ -1,0 +1,13 @@
+#!/bin/bash
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+sysconfdir=@sysconfdir@
+bindir=@bindir@
+sbindir=@sbindir@
+
+# don't start pmacct on boot
+update-rc.d -f pmacct remove >/dev/null
+
+# save a copy of default config files
+cp /etc/pmacct/pmacctd.conf /etc/pmacct/pmacctd.conf.bak

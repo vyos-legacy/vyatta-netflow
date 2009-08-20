@@ -1,0 +1,6 @@
+vyatta-netflow (0.1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Wed, 17 Jun 2009 11:22:00 -0700
+

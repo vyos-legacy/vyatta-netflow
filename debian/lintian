@@ -1,0 +1,2 @@
+vyatta-netflow: file-in-unusual-dir
+vyatta-netflow: dir-or-file-in-opt

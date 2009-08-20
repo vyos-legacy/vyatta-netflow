@@ -1,0 +1,6 @@
+help: Set flow accounting
+
+commit:expression: $VAR(./interface/@@) != ""; \
+                   "At least one interface must be configured"
+
+end: sudo /opt/vyatta/sbin/vyatta-netflow.pl --action update

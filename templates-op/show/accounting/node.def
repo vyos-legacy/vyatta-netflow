@@ -1,0 +1,3 @@
+help: Show flow accounting statistics
+run: sudo /opt/vyatta/bin/sudo-users/vyatta-show-acct.pl --action 'show'
+

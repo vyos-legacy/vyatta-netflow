@@ -1,0 +1,8 @@
+The Debian Package vyatta-netflow
+---------------------------------
+
+This package has the Vyatta configuration/operational templates and scripts
+for the netflow/sflow (pmacct).
+
+ -- Stig Thormodsrud <stig@vyatta.com> Wed, 17 Jun 2009
+

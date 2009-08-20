@@ -1,0 +1,17 @@
+Source: vyatta-netflow
+Section: contrib/net
+Priority: extra
+Maintainer: Vyatta Package Maintainers <maintainers@vyatta.com>
+Build-Depends: debhelper (>= 5), autotools-dev
+Standards-Version: 3.7.2
+
+Package: vyatta-netflow
+Architecture: all
+Depends: perl,
+ vyatta-cfg,
+ vyatta-cfg-system,
+ vyatta-op,
+ pmacct
+Description: Vyatta commands for netflow
+ Vyatta configuration/operational templates and scripts for the netflow/sflow
+ system (pmacct).
