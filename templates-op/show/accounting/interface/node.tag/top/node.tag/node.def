@@ -1,0 +1,4 @@
+help: Show flow accounting statistics for top N
+run: sudo /opt/vyatta/bin/sudo-users/vyatta-show-acct.pl --action 'show' \
+                                                         --intf "$4" \
+                                                         --topN "$6"

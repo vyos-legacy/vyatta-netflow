@@ -44,25 +44,32 @@ sub validate_intf {
 }
 
 sub display_lines {
-    my (@lines) = @_;
+    my ($topN, @lines) = @_;
+
+    $topN = 0xffffffff if ! defined $topN;
 
     #format output for 80 column display
     my $format = "%-15s %-15s %-5s %-5s %5s %10s %10s %7s\n";
-    printf($format, 
-	   'Src Addr', 'Dst Addr', 'Sport', 'Dport', 'Proto', 
-	   'Packets','Bytes', 'Flows');
+    if ($topN != 0) {
+	printf($format, 
+	       'Src Addr', 'Dst Addr', 'Sport', 'Dport', 'Proto', 
+	       'Packets','Bytes', 'Flows');
+    }
     my $count = 0;
     my ($tot_flows, $tot_pkts, $tot_bytes) = (0, 0, 0);
     foreach my $line (@lines) {
 	my ($src, $dst, $sport, $dport, $proto, $tos, $pkts, $flows, $bytes) =
 	    split(/\s+/, $line);	
 	next if !defined $src or $src !~ m/\d+\.\d+\.\d+\.\d+/;
-	printf($format, 
-	       $src, $dst, $sport, $dport, $proto, $pkts, $bytes, $flows);
 	$count++;
 	$tot_flows += $flows;
 	$tot_pkts  += $pkts;
 	$tot_bytes += $bytes;
+	if ($topN != 0) {
+	    printf($format, 
+		   $src, $dst, $sport, $dport, $proto, $pkts, $bytes, $flows);
+	}
+	last if $topN != 0 and $count >= $topN;
     }
     print "\nTotal entries: $count\n";
     print "Total flows  : $tot_flows\n";
@@ -71,12 +78,12 @@ sub display_lines {
 }
 
 sub show_acct {
-    my ($intf) = @_;
+    my ($intf, $topN) = @_;
 
     print "Accounting flows for [$intf]\n";
     my $pipe_file = acct_get_pipe_file($intf);
     my @lines = `/usr/bin/pmacct -p $pipe_file -s -T bytes`;
-    display_lines(@lines);
+    display_lines($topN, @lines);
 }
 
 sub show_acct_host {
@@ -85,7 +92,7 @@ sub show_acct_host {
     my $pipe_file = acct_get_pipe_file($intf);
     my @slines = `/usr/bin/pmacct -p $pipe_file -c src_host -M $host -T bytes`;
     my @dlines = `/usr/bin/pmacct -p $pipe_file -c dst_host -M $host -T bytes`;
-    display_lines(@slines,@dlines);
+    display_lines(undef, @slines,@dlines);
 }
 
 sub show_acct_port {
@@ -94,7 +101,7 @@ sub show_acct_port {
     my $pipe_file = acct_get_pipe_file($intf);
     my @slines = `/usr/bin/pmacct -p $pipe_file -c src_port -M $port -T bytes`;
     my @dlines = `/usr/bin/pmacct -p $pipe_file -c dst_port -M $port -T bytes`;
-    display_lines(@slines,@dlines);
+    display_lines(undef, @slines,@dlines);
 }
 
 sub clear_acct {
@@ -105,15 +112,51 @@ sub clear_acct {
     system("/usr/bin/pmacct -p $pipe_file -e");
 }
 
+sub alphanum_split {
+    my ($str) = @_;
+    my @list = split m/(?=(?<=\D)\d|(?<=\d)\D)/, $str;
+    return @list;
+}
+
+sub natural_order {
+    my ($a, $b) = @_;
+    my @a = alphanum_split($a);
+    my @b = alphanum_split($b);
+  
+    while (@a && @b) {
+	my $a_seg = shift @a;
+	my $b_seg = shift @b;
+	my $val;
+	if (($a_seg =~ /\d/) && ($b_seg =~ /\d/)) {
+	    $val = $a_seg <=> $b_seg;
+	} else {
+	    $val = $a_seg cmp $b_seg;
+	}
+	if ($val != 0) {
+	    return $val;
+	}
+    }
+    return @a <=> @b;
+}
+
+sub intf_sort {
+    my @a = @_;
+    my @new_a = sort { natural_order($a,$b) } @a;
+    return @new_a;
+}
+
+
 #
 # main
 #
-my ($action, $intf, $host, $port);
+my ($action, $intf, $host, $port, $topN);
 
 GetOptions("action=s"     => \$action,
            "intf=s"       => \$intf,
 	   "host=s"       => \$host,
-           "port=s"       => \$port);
+           "port=s"       => \$port,
+           "topN=s"       => \$topN,
+);
 
 if (! defined $action) {
     die "no action\n";
@@ -122,9 +165,10 @@ if (! defined $action) {
 if ($action eq 'show') {
     if ($intf) {
 	validate_intf($intf);
-	show_acct($intf);
+	show_acct($intf, $topN);
     } else {
 	my @intfs = acct_get_intfs();
+	@intfs = intf_sort(@intfs);
 	if (scalar(@intfs) > 0) {
 	    foreach my $intf (@intfs) {
 		validate_intf($intf);
