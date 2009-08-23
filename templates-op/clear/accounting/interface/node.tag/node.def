@@ -1,2 +1,2 @@
-help: Clear flow accounting statistics for interface
+help: Clear flow accounting for interface
 allowed: /opt/vyatta/sbin/vyatta-netflow.pl --action=list-intf

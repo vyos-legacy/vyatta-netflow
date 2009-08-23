@@ -206,6 +206,8 @@ if ($action eq 'update') {
 	if ($intf_status{$intf} eq 'deleted') {
 	    acct_log("stop [$intf]");
 	    stop_daemon($intf);
+	    my $conf_file = acct_get_conf_file($intf);
+	    system("rm -f $conf_file");
 	} else { 
 	    acct_log("update [$intf]");
 	    my $conf      = acct_get_config($intf);
@@ -228,9 +230,6 @@ if ($action eq 'update') {
 }
 
 if ($action eq 'list-intf') {
-    my $config = new Vyatta::Config;
-    my $path   = "system accounting interface";
-    $config->setLevel($path);
     my @intfs = acct_get_intfs();
     print join("\n", @intfs);
     exit 0;

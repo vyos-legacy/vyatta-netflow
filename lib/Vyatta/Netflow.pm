@@ -103,8 +103,9 @@ sub restart_daemon {
     my $pid      = is_running($pid_file);
     if ($pid != 0) {
 	system("kill -INT $pid");
+	print "Stopping [$intf] accounting\n";
 	acct_log("restart_deamon [$intf]");
-	sleep 1; # give the daemon a chance to properly shutdown
+	sleep 5; # give the daemon a chance to properly shutdown
     } 
     start_daemon($intf, $conf_file);	
 }

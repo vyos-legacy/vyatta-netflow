@@ -215,6 +215,17 @@ if ($action eq 'clear') {
     exit 0;
 }
 
+if ($action eq 'restart') {
+    my $conf_file = acct_get_conf_file($intf);
+    if (-e $conf_file) {
+	restart_daemon($intf, $conf_file);
+	exit 0;
+    } else {
+	print "Flow accounting not configured on [$intf]\n";
+	exit 1;
+    }
+}
+
 exit 1;
 
 # end of file
