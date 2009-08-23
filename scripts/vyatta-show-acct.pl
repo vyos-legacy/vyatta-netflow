@@ -43,6 +43,13 @@ sub validate_intf {
     }
 }
 
+# taken from "perldoc -q commas"
+sub commify {
+    local($_) = shift;
+    1 while s/^(-?\d+)(\d{3})/$1,$2/;
+    return $_;
+} 
+
 sub display_lines {
     my ($topN, @lines) = @_;
 
@@ -71,10 +78,10 @@ sub display_lines {
 	}
 	last if $topN != 0 and $count >= $topN;
     }
-    print "\nTotal entries: $count\n";
-    print "Total flows  : $tot_flows\n";
-    print "Total pkts   : $tot_pkts\n";
-    print "Total bytes  : $tot_bytes\n";
+    print "\nTotal entries: ", commify($count), "\n";
+    print "Total flows  : ", commify($tot_flows), "\n";
+    print "Total pkts   : ", commify($tot_pkts), "\n";
+    print "Total bytes  : ", commify($tot_bytes), "\n";
 }
 
 sub show_acct {
