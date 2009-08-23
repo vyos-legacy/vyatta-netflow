@@ -1,0 +1,2 @@
+help: Clear flow accounting statistics
+run: sudo /opt/vyatta/bin/sudo-users/vyatta-show-acct.pl --action 'clear'

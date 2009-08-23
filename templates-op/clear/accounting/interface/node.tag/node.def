@@ -1,4 +1,2 @@
 help: Clear flow accounting statistics for interface
 allowed: /opt/vyatta/sbin/vyatta-netflow.pl --action=list-intf
-run: sudo /opt/vyatta/bin/sudo-users/vyatta-show-acct.pl --action 'clear' \
-                                                         --intf "$4"
