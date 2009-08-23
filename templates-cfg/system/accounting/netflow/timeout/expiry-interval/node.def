@@ -1,0 +1,9 @@
+type: u32
+default: 60
+help: Set expiry scan interval
+
+syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 2147483647; \
+       "Timeout timer must be between 0 and 2147483647"
+
+comp_help: possible completions:
+  <0-2147483647>    Expiry scan interval (default 60)

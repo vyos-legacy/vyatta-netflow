@@ -56,8 +56,20 @@ sub acct_conf_globals {
     return $output;
 }
 
+my %timeout_hash = (
+    'tcp-generic'     => 'tcp',
+    'tcp-rst'         => 'tcp.rst',
+    'tcp-fin'         => 'tcp.fin',
+    'udp'             => 'udp',
+    'icmp'            => 'icmp',
+    'flow-generic'    => 'general',
+    'max-active-life' => 'maxlife',
+    'expiry-interval' => 'expint',
+);
+
 sub acct_get_netflow {
     my ($intf, $config) = @_;
+
     my $path   = 'system accounting';
     my $output = undef;
 
@@ -84,12 +96,23 @@ sub acct_get_netflow {
 	    $output .= "nfprobe_receiver: $server:$port\n";
 	}
     }
-    $output .= "nfprobe_timeouts: maxlife=60:general=15\n";
+
+    $config->setLevel("$path netflow timeout");   
+    my $str = '';
+    foreach my $timeout (keys %timeout_hash) {
+	my $value = $config->returnValue($timeout);
+	if ($value and $timeout_hash{$timeout}) {
+	    $str .= ":" if $str ne '';
+	    $str .= "$timeout_hash{$timeout}=$value";
+	}
+    }
+    $output .= "nfprobe_timeouts: $str\n" if $str ne '';
     return $output;
 } 
 
 sub acct_get_sflow {
     my ($intf, $config) = @_;
+
     my $path   = 'system accounting';
     my $output = undef;
 
