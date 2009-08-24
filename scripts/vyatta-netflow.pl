@@ -35,7 +35,7 @@ use warnings;
 use strict;
 
 # Default ports for netflow/sflow
-my $def_nf_port = 2100;
+my $def_nf_port = 2055;
 my $def_sf_port = 6343;
 
 

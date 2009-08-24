@@ -1,7 +1,7 @@
 type: u32
-default: 2100
+default: 2055
 help: Set listen port
 syntax:expression: $VAR(@) > 1024 && $VAR(@) <= 65535; \
        "Port must be between 1025 and 65535"
 comp_help: possible completions:
-  <1025-65535>     Set port number (default 2100)
+  <1025-65535>     Set port number (default 2055)
