@@ -67,6 +67,24 @@ my %timeout_hash = (
     'expiry-interval' => 'expint',
 );
 
+sub acct_get_collector_names {
+    my ($config, $nf_sf) = @_;
+
+    my @names;
+    my $path = 'system accounting';
+    $config->setLevel("$path $nf_sf server"); 
+    my @servers = $config->listNodes();
+    if (scalar(@servers)) {
+	foreach my $server (@servers) {
+	    $config->setLevel("$path $nf_sf server $server");   
+	    my $port = $config->returnValue('port');
+	    $port = $def_nf_port if ! defined $port;
+	    push @names, "$server-$port";
+	}
+    }
+    return @names;
+}
+
 sub acct_get_netflow {
     my ($intf, $config) = @_;
 
@@ -77,36 +95,33 @@ sub acct_get_netflow {
     return $output if ! $config->exists('netflow');
 
     $config->setLevel("$path netflow");   
-    my $version = $config->returnValue('version');
-    $output .= "nfprobe_version: $version\n" if defined $version;
-
+    my $version   = $config->returnValue('version');
     my $engine_id = $config->returnValue('engine-id');
     $engine_id = 0 if ! defined $engine_id;
     my $engine_type = `ip link show $intf | grep $intf | cut -d : -f 1`;
     chomp $engine_type;
-    $output .= "nfprobe_engine: $engine_id:$engine_type\n";
-
-    $config->setLevel("$path netflow server");   
-    my @servers = $config->listNodes();
-    if (scalar(@servers)) {
-	foreach my $server (@servers) {
-	    $config->setLevel("$path netflow server $server");   
-	    my $port = $config->returnValue('port');
-	    $port = $def_nf_port if ! defined $port;
-	    $output .= "nfprobe_receiver: $server:$port\n";
-	}
-    }
 
     $config->setLevel("$path netflow timeout");   
-    my $str = '';
+    my $timeout_str = '';
     foreach my $timeout (keys %timeout_hash) {
 	my $value = $config->returnValue($timeout);
 	if ($value and $timeout_hash{$timeout}) {
-	    $str .= ":" if $str ne '';
-	    $str .= "$timeout_hash{$timeout}=$value";
+	    $timeout_str .= ":" if $timeout_str ne '';
+	    $timeout_str .= "$timeout_hash{$timeout}=$value";
 	}
     }
-    $output .= "nfprobe_timeouts: $str\n" if $str ne '';
+
+    my @names = acct_get_collector_names($config, 'netflow');
+    foreach my $name (@names) {
+	my $server_port = $name;
+	$server_port    =~ s/-/:/;	
+	$output .= "nfprobe_receiver[$name]: $server_port\n";
+	$output .= "nfprobe_version[$name]: $version\n" if defined $version;
+	$output .= "nfprobe_engine[$name]: $engine_id:$engine_type\n";
+	$output .= "nfprobe_timeouts[$name]: $timeout_str\n" 
+	    if $timeout_str ne '';
+    }
+
     return $output;
 } 
 
@@ -121,27 +136,22 @@ sub acct_get_sflow {
 
     $config->setLevel("$path sflow"); 
     my $agent = $config->returnValue('agentid');
-    if ($agent) {
-	$output .= "sfprobe_agentsubid: $agent\n";
+
+    my @names = acct_get_collector_names($config, 'sflow');
+    foreach my $name (@names) {
+	my $server_port = $name;
+	$server_port    =~ s/-/:/;
+	$output .= "sfprobe_receiver[$name]: $server_port\n";
+	$output .= "sfprobe_agentsubid[$name]: $agent\n" if $agent;
     }
 
-    $config->setLevel("$path sflow server");  
-    my @servers = $config->listNodes();
-    if (scalar(@servers)) {
-	foreach my $server (@servers) {
-	    $config->setLevel("$path sflow server $server");   
-	    my $port = $config->returnValue('port');
-	    $port = $def_sf_port if ! defined $port;
-	    $output .= "sfprobe_receiver: $server:$port\n";
-	}
-    }
     return $output;
 }
 
 sub acct_get_output_filter {
     my ($intf) = @_;
 
-    my $output = '';
+    my $output    = '';
     my $interface = new Vyatta::Interface($intf);
     my $hwaddr    = $interface->hw_address();
     if ($hwaddr) {
@@ -168,15 +178,25 @@ sub acct_get_config {
     $config->setLevel("$path interface $intf");
     my $sampling = $config->returnValue('sampling-rate');
     $output .= "sampling_rate: $sampling\n" if defined $sampling;
-
     $output .= acct_get_output_filter($intf);
 
     my $plugins = 'plugins: memory';
     my $netflow = acct_get_netflow($intf, $config);
+    if (defined $netflow) {
+	my @names = acct_get_collector_names($config, 'netflow');
+	foreach my $name (@names) {
+	    $plugins .= ",nfprobe[$name]";
+	}
+    }
+
     my $sflow   = acct_get_sflow($intf, $config);
-    $plugins .= ',nfprobe' if defined $netflow;
-    $plugins .= ',sfprobe' if defined $sflow;
-    
+    if (defined $sflow) {
+	my @names = acct_get_collector_names($config, 'sflow');
+	foreach my $name (@names) {
+	    $plugins .= ",sfprobe[$name]";
+	}
+    }
+
     $output .= "$plugins\n";
     $output .= $netflow if defined $netflow;
     $output .= $sflow   if defined $sflow;
