@@ -71,7 +71,7 @@ sub acct_get_collector_names {
     my ($config, $nf_sf) = @_;
 
     my @names;
-    my $path = 'system accounting';
+    my $path = 'system flow-accounting';
     $config->setLevel("$path $nf_sf server"); 
     my @servers = $config->listNodes();
     if (scalar(@servers)) {
@@ -88,7 +88,7 @@ sub acct_get_collector_names {
 sub acct_get_netflow {
     my ($intf, $config) = @_;
 
-    my $path   = 'system accounting';
+    my $path   = 'system flow-accounting';
     my $output = undef;
 
     $config->setLevel($path);
@@ -128,7 +128,7 @@ sub acct_get_netflow {
 sub acct_get_sflow {
     my ($intf, $config) = @_;
 
-    my $path   = 'system accounting';
+    my $path   = 'system flow-accounting';
     my $output = undef;
 
     $config->setLevel($path);
@@ -166,7 +166,7 @@ sub acct_get_config {
     
     my $config = new Vyatta::Config;
     my $output = '';
-    my $path   = 'system accounting';
+    my $path   = 'system flow-accounting';
 
     $output .= acct_conf_globals($intf);
     $output .= "interface: $intf\n";
@@ -219,7 +219,7 @@ if ($action eq 'update') {
     acct_log("update");
     my $config = new Vyatta::Config;
 
-    $config->setLevel('system accounting interface');
+    $config->setLevel('system flow-accounting interface');
     my %intf_status = $config->listNodeStatus();
 
     foreach my $intf (keys %intf_status) {

@@ -38,7 +38,7 @@ sub validate_intf {
 
     my $pid_file = acct_get_pid_file($intf);
     if (!is_running($pid_file)) {
-	print "accounting is not running on [$intf]\n";
+	print "flow-accounting is not running on [$intf]\n";
 	exit 1;
     }
 }
@@ -87,7 +87,7 @@ sub display_lines {
 sub show_acct {
     my ($intf, $topN) = @_;
 
-    print "Accounting flows for [$intf]\n";
+    print "flow-accounting for [$intf]\n";
     my $pipe_file = acct_get_pipe_file($intf);
     my @lines = `/usr/bin/pmacct -p $pipe_file -s -T bytes`;
     display_lines($topN, @lines);
@@ -114,7 +114,7 @@ sub show_acct_port {
 sub clear_acct {
     my ($intf) = @_;
 
-    print "clearings accounting for [$intf]\n";
+    print "clearings flow-accounting for [$intf]\n";
     my $pipe_file = acct_get_pipe_file($intf);
     system("/usr/bin/pmacct -p $pipe_file -e");
 }
@@ -183,7 +183,7 @@ if ($action eq 'show') {
 		print "\n";
 	    }
 	} else {
-	    print "Accounting not configured on any interface\n";
+	    print "flow-accounting not configured on any interface\n";
 	    exit 1;
 	}
     }
@@ -228,7 +228,7 @@ if ($action eq 'restart') {
 	restart_daemon($intf, $conf_file);
 	exit 0;
     } else {
-	print "Flow accounting not configured on [$intf]\n";
+	print "flow-accounting not configured on [$intf]\n";
 	exit 1;
     }
 }
