@@ -1,3 +1,9 @@
+vyatta-netflow (0.3) unstable; urgency=low
+
+  * Rename "accounting" to "flow-accounting".
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 29 Oct 2009 18:38:48 -0700
+
 vyatta-netflow (0.2) unstable; urgency=low
 
   * Fix spelling error.
