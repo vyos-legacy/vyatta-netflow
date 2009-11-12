@@ -1,3 +1,10 @@
+vyatta-netflow (0.4) unstable; urgency=low
+
+  * Fix bug 5110: "show flow-accouting" claims "flow-accounting not
+    configured on any interface"
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 12 Nov 2009 11:29:33 -0800
+
 vyatta-netflow (0.3) unstable; urgency=low
 
   * Rename "accounting" to "flow-accounting".
