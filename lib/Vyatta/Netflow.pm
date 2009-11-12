@@ -170,7 +170,7 @@ sub acct_write_file {
 
 sub acct_get_intfs {
     my $config = new Vyatta::Config;
-    my $path   = "system accounting interface";
+    my $path   = "system flow-accounting interface";
     $config->setLevel($path);
     my @intfs = $config->listOrigNodes();
     return @intfs;
