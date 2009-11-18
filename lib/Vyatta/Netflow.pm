@@ -76,7 +76,7 @@ sub is_running {
 sub start_daemon {
     my ($intf, $conf_file) = @_;
 
-    print "Starting [$intf] accounting\n";
+    print "Starting [$intf] flow-accounting\n";
     my $cmd  = "$daemon -f $conf_file";
     system($cmd);
     acct_log("start_daemon [$intf]");
@@ -88,7 +88,7 @@ sub stop_daemon {
     my $pid_file = acct_get_pid_file($intf);
     my $pid      = is_running($pid_file);
     if ($pid != 0) {
-	print "Stopping [$intf] accounting\n";
+	print "Stopping [$intf] flow-accounting\n";
 	system("kill -INT $pid");
 	acct_log("stop_daemon [$intf]");
     } else {
@@ -103,7 +103,7 @@ sub restart_daemon {
     my $pid      = is_running($pid_file);
     if ($pid != 0) {
 	system("kill -INT $pid");
-	print "Stopping [$intf] accounting\n";
+	print "Stopping [$intf] flow-accounting\n";
 	acct_log("restart_deamon [$intf]");
 	sleep 5; # give the daemon a chance to properly shutdown
     } 

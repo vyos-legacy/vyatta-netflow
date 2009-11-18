@@ -98,7 +98,7 @@ sub acct_get_netflow {
     my $version   = $config->returnValue('version');
     my $engine_id = $config->returnValue('engine-id');
     $engine_id = 0 if ! defined $engine_id;
-    my $engine_type = `ip link show $intf | grep $intf | cut -d : -f 1`;
+    my $engine_type = `ip link show $intf | grep "$intf:" | cut -d : -f 1`;
     chomp $engine_type;
 
     $config->setLevel("$path netflow timeout");   
@@ -154,7 +154,7 @@ sub acct_get_output_filter {
     my $output    = '';
     my $interface = new Vyatta::Interface($intf);
     my $hwaddr    = $interface->hw_address();
-    if ($hwaddr) {
+    if ($hwaddr and $hwaddr ne '00:00:00:00:00:00') {
 	# filter out output traffic
 	$output .= "pcap_filter: !ether src $hwaddr\n";
     }
