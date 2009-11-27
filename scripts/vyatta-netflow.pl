@@ -30,6 +30,7 @@ use lib '/opt/vyatta/share/perl5';
 use Vyatta::Config;
 use Vyatta::Netflow;
 use Vyatta::Interface;
+use Vyatta::Misc;
 
 use warnings;
 use strict;
@@ -125,6 +126,58 @@ sub acct_get_netflow {
     return $output;
 } 
 
+sub sflow_find_agent_ip {
+    my ($config) = @_;
+    
+    my $router_id = undef;
+    my $path = 'protocols';
+    $config->setLevel($path);
+    if ($config->exists('bgp')) {
+        $config->setLevel("$path bgp");
+        my @AS = $config->listNodes();   
+        if (scalar(@AS) > 0) {
+            $config->setLevel("$path bgp $AS[0] parameters");
+            $router_id = $config->returnValue('router-id');
+            if (defined $router_id) {
+                return $router_id;
+            }
+        }
+    }
+
+    $config->setLevel($path);
+    if ($config->exists('ospf')) {
+        $config->setLevel("$path ospf parameters");
+        if ($config->exists('router-id')) {
+            $router_id = $config->returnValue('router-id');
+            return $router_id;
+        }
+    }
+
+    $config->setLevel($path);
+    if ($config->exists('ospfv3')) {
+        $config->setLevel("$path ospfv3 parameters");
+        if ($config->exists('router-id')) {
+            $router_id = $config->returnValue('router-id');
+            return $router_id;
+        }
+    }
+
+    my $cmd = "ip link show |egrep '^[0-9]:' |cut -d ':' -f 2 |cut -d ' ' -f 2";
+    my @intfs = `$cmd`;
+    chomp(@intfs);
+    foreach my $intf (@intfs) {
+        my @ips = getIP($intf, 4);
+        foreach my $ip (@ips) {
+            if ($ip =~ /^([\d.]+)\/([\d.]+)$/) { # strip /mask
+                $ip = $1
+            }
+            next if $ip eq '127.0.0.1';
+            return $ip;
+        }
+    }
+    return;
+}
+
 sub acct_get_sflow {
     my ($intf, $config) = @_;
 
@@ -135,13 +188,29 @@ sub acct_get_sflow {
     return $output if ! $config->exists('sflow');
 
     $config->setLevel("$path sflow"); 
-    my $agent = $config->returnValue('agentid');
+    my $agent    = $config->returnValue('agentid');
+    my $agent_ip = $config->returnValue('agent-address');
+    if (defined $agent_ip and $agent_ip eq 'auto') {
+        $agent_ip = sflow_find_agent_ip($config);
+    }
+    my $found = undef;
+    my @ips = getIP();
+    foreach my $ip (@ips) {
+        if ($ip =~ /^([\d.]+)\/([\d.]+)$/) { # strip /mask
+            $ip = $1
+        }
+        $found = 1 if $ip eq $agent_ip;
+    }
+    if (! defined $found) {
+        die "agent-address [$agent_ip] not configured on system\n";
+    }
 
     my @names = acct_get_collector_names($config, 'sflow');
     foreach my $name (@names) {
 	my $server_port = $name;
 	$server_port    =~ s/-/:/;
 	$output .= "sfprobe_receiver[$name]: $server_port\n";
+	$output .= "sfprobe_agentip[$name]: $agent_ip\n" if $agent_ip;
 	$output .= "sfprobe_agentsubid[$name]: $agent\n" if $agent;
     }
 

@@ -1,0 +1,10 @@
+type: txt
+help: Set sflow agent IPv4 address
+
+default: "auto"
+
+allowed: echo "auto <>"
+
+comp_help: possible completions:
+  auto                  Set sflow agent-address automatically (default)
+  <x.x.x.x>             Set sflow agent-address
