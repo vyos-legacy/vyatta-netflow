@@ -6,6 +6,7 @@ bin_sudo_usersdir = $(bindir)/sudo-users
 sbin_SCRIPTS  = scripts/vyatta-netflow.pl
 
 bin_sudo_users_SCRIPTS  = scripts/vyatta-show-acct.pl
+bin_sudo_users_SCRIPTS += scripts/quagga_gen_as_network.pl
 
 share_perl5_DATA  = lib/Vyatta/Netflow.pm
 
