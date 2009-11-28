@@ -32,6 +32,7 @@ use Vyatta::Netflow;
 use warnings;
 use strict;
 
+my $pmacct = '/usr/bin/pmacct';
 
 sub validate_intf {
     my ($intf) = @_;
@@ -65,16 +66,18 @@ sub display_lines {
     my $count = 0;
     my ($tot_flows, $tot_pkts, $tot_bytes) = (0, 0, 0);
     foreach my $line (@lines) {
-	my ($src, $dst, $sport, $dport, $proto, $tos, $pkts, $flows, $bytes) =
-	    split(/\s+/, $line);	
-	next if !defined $src or $src !~ m/\d+\.\d+\.\d+\.\d+/;
+        my ($id, $class, $src_mac, $dst_mac, $vlan, $src_as, $dst_as,
+            $src_ip, $dst_ip, $sport, $dport, $tcp_flags, $proto, 
+            $tos, $pkts, $flows, $bytes) = split(/\s+/, $line);
+	next if !defined $src_ip or $src_ip !~ m/\d+\.\d+\.\d+\.\d+/;
 	$count++;
 	$tot_flows += $flows;
 	$tot_pkts  += $pkts;
 	$tot_bytes += $bytes;
 	if ($topN != 0) {
 	    printf($format, 
-		   $src, $dst, $sport, $dport, $proto, $pkts, $bytes, $flows);
+		   $src_ip, $dst_ip, $sport, $dport, $proto, 
+                   $pkts, $bytes, $flows);
 	}
 	last if $topN != 0 and $count >= $topN;
     }
@@ -89,7 +92,7 @@ sub show_acct {
 
     print "flow-accounting for [$intf]\n";
     my $pipe_file = acct_get_pipe_file($intf);
-    my @lines = `/usr/bin/pmacct -p $pipe_file -s -T bytes`;
+    my @lines = `$pmacct -a -p $pipe_file -s -T bytes`;
     display_lines($topN, @lines);
 }
 
@@ -97,8 +100,8 @@ sub show_acct_host {
     my ($intf, $host) = @_;
 
     my $pipe_file = acct_get_pipe_file($intf);
-    my @slines = `/usr/bin/pmacct -p $pipe_file -c src_host -M $host -T bytes`;
-    my @dlines = `/usr/bin/pmacct -p $pipe_file -c dst_host -M $host -T bytes`;
+    my @slines = `$pmacct -a -p $pipe_file -c src_host -M $host -T bytes`;
+    my @dlines = `$pmacct -a -p $pipe_file -c dst_host -M $host -T bytes`;
     display_lines(undef, @slines,@dlines);
 }
 
@@ -106,8 +109,8 @@ sub show_acct_port {
     my ($intf, $port) = @_;
 
     my $pipe_file = acct_get_pipe_file($intf);
-    my @slines = `/usr/bin/pmacct -p $pipe_file -c src_port -M $port -T bytes`;
-    my @dlines = `/usr/bin/pmacct -p $pipe_file -c dst_port -M $port -T bytes`;
+    my @slines = `$pmacct -a -p $pipe_file -c src_port -M $port -T bytes`;
+    my @dlines = `$pmacct -a -p $pipe_file -c dst_port -M $port -T bytes`;
     display_lines(undef, @slines,@dlines);
 }
 
@@ -116,7 +119,7 @@ sub clear_acct {
 
     print "clearings flow-accounting for [$intf]\n";
     my $pipe_file = acct_get_pipe_file($intf);
-    system("/usr/bin/pmacct -p $pipe_file -e");
+    system("$pmacct -p $pipe_file -e");
 }
 
 sub alphanum_split {

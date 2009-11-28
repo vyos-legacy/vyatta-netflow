@@ -53,7 +53,13 @@ sub acct_conf_globals {
     $output .= "pidfile:   $pid_file\n";
     $output .= "imt_path:  $pipe_file\n";
     $output .= "aggregate: src_host,dst_host,src_port,dst_port";
-    $output .= ",proto,tos,flows\n";
+    $output .= ",proto,tos,flows";
+    if (-e '/etc/pmacct/networks.lst') {
+        $output .= ",src_as,dst_as\n";
+        $output .= "networks_file: /etc/pmacct/networks.lst\n";
+    } else {
+        $output .= "\n";
+    }
     return $output;
 }
 
