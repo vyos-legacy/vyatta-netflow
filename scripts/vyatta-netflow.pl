@@ -52,8 +52,8 @@ sub acct_conf_globals {
     $output .= "promisc:   false\n";
     $output .= "pidfile:   $pid_file\n";
     $output .= "imt_path:  $pipe_file\n";
-    $output .= "aggregate: src_host,dst_host,src_port,dst_port";
-    $output .= ",proto,tos,flows";
+    $output .= "aggregate: tag,src_mac,dst_mac,vlan,src_host,dst_host";
+    $output .= ",src_port,dst_port,proto,tos,flows";
     if (-e '/etc/pmacct/networks.lst') {
         $output .= ",src_as,dst_as\n";
         $output .= "networks_file: /etc/pmacct/networks.lst\n";

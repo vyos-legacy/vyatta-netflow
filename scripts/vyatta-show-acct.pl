@@ -66,8 +66,10 @@ sub display_lines {
     my $count = 0;
     my ($tot_flows, $tot_pkts, $tot_bytes) = (0, 0, 0);
     foreach my $line (@lines) {
-        my ($id, $class, $src_mac, $dst_mac, $vlan, $src_as, $dst_as,
-            $src_ip, $dst_ip, $sport, $dport, $tcp_flags, $proto, 
+        my ($tag, $tag2, $class, $src_mac, $dst_mac, $vlan, $src_as, $dst_as,
+            $bgp_comms, $src_bgp_comms, $as_path, $src_as_path, $pref, 
+            $src_pref, $med, $src_med, $peer_src_as, $peer_dst_as, $peer_src_ip,
+            $peer_dst_ip, $src_ip, $dst_ip, $sport, $dport, $tcp_flags, $proto, 
             $tos, $pkts, $flows, $bytes) = split(/\s+/, $line);
 	next if !defined $src_ip or $src_ip !~ m/\d+\.\d+\.\d+\.\d+/;
 	$count++;
