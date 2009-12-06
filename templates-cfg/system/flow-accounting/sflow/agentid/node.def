@@ -1,8 +1,0 @@
-type: u32
-help: Set sflow agentid
-
-syntax:expression: ($VAR(@) >= 0 && $VAR(@) < 65536) ; \
-       "port must be between 0 and 65535"
-
-comp_help: possible completions
-  <0-65535>             Set sflow subagent id
