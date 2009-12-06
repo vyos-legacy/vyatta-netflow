@@ -1,6 +1,6 @@
 tag:
 type: txt
-help: Set interface for flow accounting
+help: Set interface for flow accounting [REQUIRED]
 
 allowed: ${vyatta_sbindir}/vyatta-interfaces.pl --show all
 
