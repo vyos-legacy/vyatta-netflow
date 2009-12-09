@@ -52,6 +52,9 @@ sub acct_conf_globals {
     $output .= "promisc:   false\n";
     $output .= "pidfile:   $pid_file\n";
     $output .= "imt_path:  $pipe_file\n";
+    $output .= "uacctd_group: 2\n";
+    $output .= "refresh_maps: true\n";
+    $output .= "pre_tag_map: /etc/pmacct/int_map\n";
     $output .= "aggregate: tag,src_mac,dst_mac,vlan,src_host,dst_host";
     $output .= ",src_port,dst_port,proto,tos,flows";
     if (-e '/etc/pmacct/networks.lst') {
@@ -93,7 +96,7 @@ sub acct_get_collector_names {
 }
 
 sub acct_get_netflow {
-    my ($intf, $config) = @_;
+    my ($config) = @_;
 
     my $path   = 'system flow-accounting';
     my $output = undef;
@@ -105,8 +108,6 @@ sub acct_get_netflow {
     my $version   = $config->returnValue('version');
     my $engine_id = $config->returnValue('engine-id');
     $engine_id = 0 if ! defined $engine_id;
-    my $engine_type = `ip link show $intf | grep "$intf:" | cut -d : -f 1`;
-    chomp $engine_type;
 
     $config->setLevel("$path netflow timeout");   
     my $timeout_str = '';
@@ -124,7 +125,7 @@ sub acct_get_netflow {
 	$server_port    =~ s/-/:/;	
 	$output .= "nfprobe_receiver[$name]: $server_port\n";
 	$output .= "nfprobe_version[$name]: $version\n" if defined $version;
-	$output .= "nfprobe_engine[$name]: $engine_id:$engine_type\n";
+	$output .= "nfprobe_engine[$name]: $engine_id:0\n";
 	$output .= "nfprobe_timeouts[$name]: $timeout_str\n" 
 	    if $timeout_str ne '';
     }
@@ -185,7 +186,7 @@ sub sflow_find_agent_ip {
 }
 
 sub acct_get_sflow {
-    my ($intf, $config) = @_;
+    my ($config) = @_;
 
     my $path   = 'system flow-accounting';
     my $output = undef;
@@ -223,40 +224,20 @@ sub acct_get_sflow {
     return $output;
 }
 
-sub acct_get_output_filter {
-    my ($intf) = @_;
-
-    my $output    = '';
-    my $interface = new Vyatta::Interface($intf);
-    my $hwaddr    = $interface->hw_address();
-    if ($hwaddr and $hwaddr ne '00:00:00:00:00:00') {
-	# filter out output traffic
-	$output .= "pcap_filter: !ether src $hwaddr\n";
-    }
-    return $output;
-}
-
 sub acct_get_config {
-    my ($intf) = @_;
     
     my $config = new Vyatta::Config;
     my $output = '';
     my $path   = 'system flow-accounting';
 
-    $output .= acct_conf_globals($intf);
-    $output .= "interface: $intf\n";
+    $output .= acct_conf_globals();
 
     $config->setLevel($path);
     my $facility = $config->returnValue('syslog-facility');
     $output .= "syslog: $facility\n" if defined $facility;
     
-    $config->setLevel("$path interface $intf");
-    my $sampling = $config->returnValue('sampling-rate');
-    $output .= "sampling_rate: $sampling\n" if defined $sampling;
-    $output .= acct_get_output_filter($intf);
-
     my $plugins = 'plugins: memory';
-    my $netflow = acct_get_netflow($intf, $config);
+    my $netflow = acct_get_netflow($config);
     if (defined $netflow) {
 	my @names = acct_get_collector_names($config, 'netflow');
 	foreach my $name (@names) {
@@ -264,7 +245,7 @@ sub acct_get_config {
 	}
     }
 
-    my $sflow   = acct_get_sflow($intf, $config);
+    my $sflow   = acct_get_sflow($config);
     if (defined $sflow) {
 	my @names = acct_get_collector_names($config, 'sflow');
 	foreach my $name (@names) {
@@ -275,6 +256,55 @@ sub acct_get_config {
     $output .= "$plugins\n";
     $output .= $netflow if defined $netflow;
     $output .= $sflow   if defined $sflow;
+    return $output;
+}
+
+my $chain = 'VYATTA_POST_FW_HOOK';
+
+sub acct_add_ulog_target {
+    my ($intf) = @_;
+    
+    my $cmd = "iptables -I $chain 1 -i $intf -j ULOG --ulog-nlgroup 2";
+    my $ret = system($cmd);
+    if ($ret >> 8) {
+        die "Error: [$cmd] failed - $?\n";
+    }
+}
+
+sub acct_rm_ulog_target {
+    my ($intf) = @_;
+    
+    my $cmd = "iptables -vnL $chain --line";
+    my @lines = `$cmd 2> /dev/null | egrep ^[0-9]`;
+    if (scalar(@lines) < 1) {
+        die "Error: failed to find ULOG entry\n";
+    }
+    foreach my $line (@lines) {
+        my ($num, undef, undef, $target, undef, undef, $in) = split /\s+/, $line;
+        if (defined $in and $in eq $intf) {
+            $cmd = "iptables -D $chain $num";
+            my $ret = system($cmd);
+            if ($ret >> 8) {
+                die "Error: failed to delete target - $?\n";
+            }
+            return;
+        }
+    }
+    die "Error: failed to find target\n";
+}
+
+sub acct_get_int_map {
+    my (@intfs) = @_;
+
+    my $output = '';
+    foreach my $intf (@intfs) {
+        my $ifindx = acct_get_ifindx($intf);
+        if ($? == 0 and defined $ifindx and $ifindx > 0) {
+            $output .= "id=$ifindx\tin=$ifindx\n";
+        } else {
+            die "Error: mapping $intf to index - $?\n";
+        }
+    }
     return $output;
 }
 
@@ -297,30 +327,44 @@ if ($action eq 'update') {
     $config->setLevel('system flow-accounting interface');
     my %intf_status = $config->listNodeStatus();
 
+    my @interfaces;
     foreach my $intf (keys %intf_status) {
 	if ($intf_status{$intf} eq 'deleted') {
 	    acct_log("stop [$intf]");
-	    stop_daemon($intf);
-	    my $conf_file = acct_get_conf_file($intf);
-	    system("rm -f $conf_file");
-	} else { 
+            acct_rm_ulog_target($intf);
+	} elsif ($intf_status{$intf} eq 'added') { 
 	    acct_log("update [$intf]");
-	    my $conf      = acct_get_config($intf);
-	    my $conf_file = acct_get_conf_file($intf);
-	    if (acct_write_file($conf_file, $conf)) {
-		acct_log("conf file written [$intf]");
-		restart_daemon($intf, $conf_file);
-	    } else {
-		acct_log("conf file not written [$intf]");
-		# on reboot, the conf should match
-		# but we still need to start it
-		my $pid_file  = acct_get_pid_file($intf);		
-		if (! is_running($pid_file)) {
-		    start_daemon($intf, $conf_file);
-		}
-	    }
-	}
+            acct_add_ulog_target($intf);
+            push @interfaces, $intf;
+	} else {
+            push @interfaces, $intf;
+        }
     }
+    my $conf_file = acct_get_conf_file();
+    if (scalar(@interfaces) > 0) {
+        my $map_conf = acct_get_int_map(@interfaces);
+        my $map_changed = acct_write_file('/etc/pmacct/int_map', $map_conf);
+        my $conf = acct_get_config();
+        if (acct_write_file($conf_file, $conf)) {
+            acct_log("conf file written");
+            restart_daemon($conf_file);
+        } else {
+            # on reboot, the conf should match
+            # but we still need to start it
+            my $pid_file  = acct_get_pid_file();               
+            if (! is_running($pid_file)) {
+                start_daemon($conf_file);
+            } elsif ($map_changed) {
+                acct_log("signal reread mapping");
+                system("pkill -SIGUSR2 uacctd");
+            }
+        }
+
+    } else {
+        acct_log("stop");
+        stop_daemon();
+    }
+
     exit 0;
 }
 

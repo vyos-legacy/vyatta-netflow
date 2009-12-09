@@ -37,6 +37,7 @@ our @EXPORT = qw(
     acct_get_intfs
     acct_read_file
     acct_write_file
+    acct_get_ifindx
 );
 use base qw(Exporter);
 use File::Basename;
@@ -48,7 +49,7 @@ use Vyatta::Config;
 my $acct_debug = 1;
 my $acct_log   = '/tmp/acct';
 
-my $daemon = '/usr/sbin/pmacctd';
+my $daemon = '/usr/sbin/uacctd';
 
 sub acct_log {
     return if ! $acct_debug;
@@ -74,58 +75,51 @@ sub is_running {
 }
 
 sub start_daemon {
-    my ($intf, $conf_file) = @_;
+    my ($conf_file) = @_;
 
-    print "Starting [$intf] flow-accounting\n";
+    print "Starting flow-accounting\n";
     my $cmd  = "$daemon -f $conf_file";
     system($cmd);
-    acct_log("start_daemon [$intf]");
+    acct_log("start_daemon");
 }
 
 sub stop_daemon {
-    my ($intf) = @_;
 
-    my $pid_file = acct_get_pid_file($intf);
+    my $pid_file = acct_get_pid_file();
     my $pid      = is_running($pid_file);
     if ($pid != 0) {
-	print "Stopping [$intf] flow-accounting\n";
+	print "Stopping flow-accounting\n";
 	system("kill -INT $pid");
-	acct_log("stop_daemon [$intf]");
+	acct_log("stop_daemon");
     } else {
-	acct_log("stop daemon called while not running [$intf]");
+	acct_log("stop daemon called while not running");
     }
 }
 
 sub restart_daemon {
-    my ($intf, $conf_file) = @_;
+    my ($conf_file) = @_;
 
-    my $pid_file = acct_get_pid_file($intf);
+    my $pid_file = acct_get_pid_file();
     my $pid      = is_running($pid_file);
     if ($pid != 0) {
 	system("kill -INT $pid");
-	print "Stopping [$intf] flow-accounting\n";
-	acct_log("restart_deamon [$intf]");
+	print "Stopping flow-accounting\n";
+	acct_log("restart_deamon");
 	sleep 5; # give the daemon a chance to properly shutdown
     } 
-    start_daemon($intf, $conf_file);	
+    start_daemon($conf_file);	
 }
 
 sub acct_get_pid_file {
-    my ($intf) = @_;
-
-    return "/var/run/pmacctd-$intf.pid";
+    return "/var/run/uacctd.pid";
 }
 
 sub acct_get_pipe_file {
-    my ($intf) = @_;
-
-    return "/tmp/pmacctd-$intf.pipe";
+    return "/tmp/uacctd.pipe";
 }
 
 sub acct_get_conf_file {
-    my ($intf) = @_;
-
-    return "/etc/pmacct/pmacctd-$intf.conf";
+    return "/etc/pmacct/uacctd.conf";
 }
 
 sub acct_read_file {
@@ -174,6 +168,16 @@ sub acct_get_intfs {
     $config->setLevel($path);
     my @intfs = $config->listOrigNodes();
     return @intfs;
+}
+
+sub acct_get_ifindx {
+    my ($intf) = @_;
+
+    return if ! defined $intf;
+    my $cmd    = "ip link show dev $intf | egrep '^[0-9]' | cut -d ':' -f 1";
+    my $ifindx = `$cmd`;
+    chomp  $ifindx;
+    return $ifindx;
 }
 
 1;

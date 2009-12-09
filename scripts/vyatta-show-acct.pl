@@ -37,11 +37,18 @@ my $pmacct = '/usr/bin/pmacct';
 sub validate_intf {
     my ($intf) = @_;
 
-    my $pid_file = acct_get_pid_file($intf);
+    my $pid_file = acct_get_pid_file();
     if (!is_running($pid_file)) {
-	print "flow-accounting is not running on [$intf]\n";
+	print "flow-accounting is not running\n";
 	exit 1;
     }
+
+    my @intfs = acct_get_intfs();
+    foreach my $i (@intfs) {
+        return if $i eq $intf;
+    }
+    print "flow-accounting not configured on [$intf]\n";
+    exit 1;
 }
 
 # taken from "perldoc -q commas"
@@ -52,9 +59,11 @@ sub commify {
 } 
 
 sub display_lines {
-    my ($topN, @lines) = @_;
+    my ($intf, $topN, @lines) = @_;
 
     $topN = 0xffffffff if ! defined $topN;
+
+    my $ifindx = acct_get_ifindx($intf);
 
     #format output for 80 column display
     my $format = "%-15s %-15s %-5s %-5s %5s %10s %10s %7s\n";
@@ -72,6 +81,7 @@ sub display_lines {
             $peer_dst_ip, $src_ip, $dst_ip, $sport, $dport, $tcp_flags, $proto, 
             $tos, $pkts, $flows, $bytes) = split(/\s+/, $line);
 	next if !defined $src_ip or $src_ip !~ m/\d+\.\d+\.\d+\.\d+/;
+        next if defined $ifindx and $ifindx ne $tag;
 	$count++;
 	$tot_flows += $flows;
 	$tot_pkts  += $pkts;
@@ -93,9 +103,9 @@ sub show_acct {
     my ($intf, $topN) = @_;
 
     print "flow-accounting for [$intf]\n";
-    my $pipe_file = acct_get_pipe_file($intf);
+    my $pipe_file = acct_get_pipe_file();
     my @lines = `$pmacct -a -p $pipe_file -s -T bytes`;
-    display_lines($topN, @lines);
+    display_lines($intf, $topN, @lines);
 }
 
 sub show_acct_host {
@@ -104,7 +114,7 @@ sub show_acct_host {
     my $pipe_file = acct_get_pipe_file($intf);
     my @slines = `$pmacct -a -p $pipe_file -c src_host -M $host -T bytes`;
     my @dlines = `$pmacct -a -p $pipe_file -c dst_host -M $host -T bytes`;
-    display_lines(undef, @slines,@dlines);
+    display_lines($intf, undef, @slines,@dlines);
 }
 
 sub show_acct_port {
@@ -113,7 +123,7 @@ sub show_acct_port {
     my $pipe_file = acct_get_pipe_file($intf);
     my @slines = `$pmacct -a -p $pipe_file -c src_port -M $port -T bytes`;
     my @dlines = `$pmacct -a -p $pipe_file -c dst_port -M $port -T bytes`;
-    display_lines(undef, @slines,@dlines);
+    display_lines($intf, undef, @slines,@dlines);
 }
 
 sub clear_acct {
