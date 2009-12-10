@@ -108,6 +108,7 @@ sub acct_get_netflow {
     my $version   = $config->returnValue('version');
     my $engine_id = $config->returnValue('engine-id');
     $engine_id = 0 if ! defined $engine_id;
+    my $sampling  = $config->returnValue('sampling-rate');
 
     $config->setLevel("$path netflow timeout");   
     my $timeout_str = '';
@@ -126,8 +127,9 @@ sub acct_get_netflow {
 	$output .= "nfprobe_receiver[$name]: $server_port\n";
 	$output .= "nfprobe_version[$name]: $version\n" if defined $version;
 	$output .= "nfprobe_engine[$name]: $engine_id:0\n";
-	$output .= "nfprobe_timeouts[$name]: $timeout_str\n" 
+	$output .= "nfprobe_timeouts[$name]: $timeout_str\n"
 	    if $timeout_str ne '';
+        $output .= "sampling_rate[$name]: $sampling\n" if defined $sampling;
     }
 
     return $output;
@@ -197,6 +199,7 @@ sub acct_get_sflow {
     $config->setLevel("$path sflow"); 
     my $agent    = $config->returnValue('agentid');
     my $agent_ip = $config->returnValue('agent-address');
+    my $sampling  = $config->returnValue('sampling-rate');
     if (defined $agent_ip and $agent_ip eq 'auto') {
         $agent_ip = sflow_find_agent_ip($config);
     }
@@ -219,6 +222,7 @@ sub acct_get_sflow {
 	$output .= "sfprobe_receiver[$name]: $server_port\n";
 	$output .= "sfprobe_agentip[$name]: $agent_ip\n" if $agent_ip;
 	$output .= "sfprobe_agentsubid[$name]: $agent\n" if $agent;
+        $output .= "sampling_rate[$name]: $sampling\n" if defined $sampling;
     }
 
     return $output;

@@ -1,0 +1,5 @@
+type: u32
+help: Set netflow sampling-rate
+
+comp_help: possible completions:
+  <u32>    Sample 1 in N packets
