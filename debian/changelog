@@ -1,3 +1,9 @@
+vyatta-netflow (0.9) unstable; urgency=low
+
+  * Add error checking for valid interface.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 10 Dec 2009 14:08:22 -0800
+
 vyatta-netflow (0.8) unstable; urgency=low
 
   * Add REQUIRED tag.
