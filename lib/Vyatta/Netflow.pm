@@ -176,6 +176,10 @@ sub acct_get_ifindx {
     return if ! defined $intf;
     my $cmd    = "ip link show dev $intf | egrep '^[0-9]' | cut -d ':' -f 1";
     my $ifindx = `$cmd`;
+    if ($? > 0 ) {
+        print "Invalid interface [$intf]\n";
+        return;
+    }
     chomp  $ifindx;
     return $ifindx;
 }

@@ -303,10 +303,10 @@ sub acct_get_int_map {
     my $output = '';
     foreach my $intf (@intfs) {
         my $ifindx = acct_get_ifindx($intf);
-        if ($? == 0 and defined $ifindx and $ifindx > 0) {
+        if (defined $ifindx and $ifindx > 0) {
             $output .= "id=$ifindx\tin=$ifindx\n";
         } else {
-            die "Error: mapping $intf to index - $?\n";
+            die "Error: mapping $intf to index\n";
         }
     }
     return $output;
@@ -333,6 +333,9 @@ if ($action eq 'update') {
 
     my @interfaces;
     foreach my $intf (keys %intf_status) {
+        my $interface = new Vyatta::Interface($intf);
+        die "Undefined interface [$intf]\n" if ! defined $interface;
+        die "Invalid interface [$intf]\n" if ! $interface->exists();
 	if ($intf_status{$intf} eq 'deleted') {
 	    acct_log("stop [$intf]");
             acct_rm_ulog_target($intf);
