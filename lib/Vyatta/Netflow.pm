@@ -166,7 +166,7 @@ sub acct_get_intfs {
     my $config = new Vyatta::Config;
     my $path   = "system flow-accounting interface";
     $config->setLevel($path);
-    my @intfs = $config->listOrigNodes();
+    my @intfs = $config->returnOrigValues();
     return @intfs;
 }
 
@@ -174,7 +174,8 @@ sub acct_get_ifindx {
     my ($intf) = @_;
 
     return if ! defined $intf;
-    my $cmd    = "ip link show dev $intf | egrep '^[0-9]' | cut -d ':' -f 1";
+    my $cmd  = "ip link show dev $intf 2> /dev/null ";
+       $cmd .= "| egrep '^[0-9]' | cut -d ':' -f 1";
     my $ifindx = `$cmd`;
     if ($? > 0 ) {
         print "Invalid interface [$intf]\n";

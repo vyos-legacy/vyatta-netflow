@@ -303,10 +303,10 @@ sub acct_get_int_map {
     my $output = '';
     foreach my $intf (@intfs) {
         my $ifindx = acct_get_ifindx($intf);
-        if (defined $ifindx and $ifindx > 0) {
+        if (defined $ifindx) {
             $output .= "id=$ifindx\tin=$ifindx\n";
         } else {
-            die "Error: mapping $intf to index\n";
+            print "Warning: unknow ifindx for [$intf]\n";
         }
     }
     return $output;
@@ -320,33 +320,35 @@ sub acct_get_int_map {
 my ($action, $intf);
 
 GetOptions("action=s"      => \$action,
+           "intf=s"        => \$intf,
 );
 
 die "Undefined action" if ! $action;
+
+if ($action eq 'add-intf') {
+    die "Error: must include interface\n" if ! defined $intf;
+    my $interface = new Vyatta::Interface($intf);
+    die "Undefined interface [$intf]\n" if ! defined $interface;
+    acct_log("update [$intf]");
+    acct_add_ulog_target($intf);
+    print "Adding flow-accounting for [$intf]\n";
+    exit 0;
+}
+
+if ($action eq 'del-intf') {
+    die "Error: must include interface\n" if ! defined $intf;
+    acct_log("stop [$intf]");
+    acct_rm_ulog_target($intf);
+    print "Removing flow-accounting for [$intf]\n";
+    exit 0;
+}
 
 if ($action eq 'update') { 
     acct_log("update");
     my $config = new Vyatta::Config;
 
     $config->setLevel('system flow-accounting interface');
-    my %intf_status = $config->listNodeStatus();
-
-    my @interfaces;
-    foreach my $intf (keys %intf_status) {
-        my $interface = new Vyatta::Interface($intf);
-        die "Undefined interface [$intf]\n" if ! defined $interface;
-        die "Invalid interface [$intf]\n" if ! $interface->exists();
-	if ($intf_status{$intf} eq 'deleted') {
-	    acct_log("stop [$intf]");
-            acct_rm_ulog_target($intf);
-	} elsif ($intf_status{$intf} eq 'added') { 
-	    acct_log("update [$intf]");
-            acct_add_ulog_target($intf);
-            push @interfaces, $intf;
-	} else {
-            push @interfaces, $intf;
-        }
-    }
+    my @interfaces = $config->returnValues();
     my $conf_file = acct_get_conf_file();
     if (scalar(@interfaces) > 0) {
         my $map_conf = acct_get_int_map(@interfaces);

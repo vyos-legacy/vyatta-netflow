@@ -1,6 +1,10 @@
-tag:
+multi:
 type: txt
 help: Set interface for flow accounting [REQUIRED]
 
 allowed: ${vyatta_sbindir}/vyatta-interfaces.pl --show all
+
+create: sudo ${vyatta_sbindir}/vyatta-netflow.pl --action add-intf --intf '$VAR(@)'
+
+delete: sudo ${vyatta_sbindir}/vyatta-netflow.pl --action del-intf --intf '$VAR(@)'
 
