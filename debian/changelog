@@ -1,3 +1,11 @@
+vyatta-netflow (0.10) unstable; urgency=low
+
+  * Change interface node from tag to multi.
+  * Fix 'clear flow-accounting' to work with 1 process for all
+    interfaces.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Fri, 11 Dec 2009 14:50:44 -0800
+
 vyatta-netflow (0.9) unstable; urgency=low
 
   * Add error checking for valid interface.
