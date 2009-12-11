@@ -1,0 +1,2 @@
+help: Clear flow accounting process
+run: sudo /opt/vyatta/bin/sudo-users/vyatta-show-acct.pl --action 'restart' 

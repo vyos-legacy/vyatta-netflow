@@ -372,6 +372,7 @@ if ($action eq 'update') {
     } else {
         acct_log("stop");
         stop_daemon();
+        system("rm -f $conf_file");
     }
 
     exit 0;

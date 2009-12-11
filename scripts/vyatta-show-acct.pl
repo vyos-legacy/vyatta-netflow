@@ -127,10 +127,8 @@ sub show_acct_port {
 }
 
 sub clear_acct {
-    my ($intf) = @_;
-
-    print "clearings flow-accounting for [$intf]\n";
-    my $pipe_file = acct_get_pipe_file($intf);
+    print "clearings flow-accounting\n";
+    my $pipe_file = acct_get_pipe_file();
     system("$pmacct -p $pipe_file -e");
 }
 
@@ -224,26 +222,22 @@ if ($action eq 'show-port') {
 }
 
 if ($action eq 'clear') {
-    if ($intf) {
-	validate_intf($intf);
-	clear_acct($intf);
-    } else {
-	my @intfs = acct_get_intfs();
-	foreach my $intf (@intfs) {
-	    validate_intf($intf);
-	    clear_acct($intf);
-	}
+    my $pid_file = acct_get_pid_file();
+    if (!is_running($pid_file)) {
+	print "flow-accounting is not running\n";
+	exit 1;
     }
+    clear_acct($intf);
     exit 0;
 }
 
 if ($action eq 'restart') {
-    my $conf_file = acct_get_conf_file($intf);
+    my $conf_file = acct_get_conf_file();
     if (-e $conf_file) {
-	restart_daemon($intf, $conf_file);
+	restart_daemon($conf_file);
 	exit 0;
     } else {
-	print "flow-accounting not configured on [$intf]\n";
+	print "flow-accounting not configured\n";
 	exit 1;
     }
 }

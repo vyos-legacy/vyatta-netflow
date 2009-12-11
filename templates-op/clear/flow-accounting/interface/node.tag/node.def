@@ -1,2 +1,0 @@
-help: Clear flow accounting for interface
-allowed: /opt/vyatta/sbin/vyatta-netflow.pl --action=list-intf
