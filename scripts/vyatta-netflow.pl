@@ -39,6 +39,10 @@ use strict;
 my $def_nf_port = 2055;
 my $def_sf_port = 6343;
 
+# ULOG tuning parameters
+my $ulog_cprange    = 64;  # number of bytes of the packet copied to ULOG
+my $ulog_qthreshold = 10;  # number of packets to batch to ULOG
+
 
 sub acct_conf_globals {
     my ($intf) = @_;
@@ -269,6 +273,12 @@ sub acct_add_ulog_target {
     my ($intf) = @_;
     
     my $cmd = "iptables -I $chain 1 -i $intf -j ULOG --ulog-nlgroup 2";
+    if (defined $ulog_cprange) {
+        $cmd .= " --ulog-cprange $ulog_cprange";
+    }
+    if (defined $ulog_qthreshold) {
+        $cmd .= " --ulog-qthreshold $ulog_qthreshold";
+    }
     my $ret = system($cmd);
     if ($ret >> 8) {
         die "Error: [$cmd] failed - $?\n";
