@@ -43,6 +43,9 @@ my $def_sf_port = 6343;
 my $ulog_cprange    = 64;  # number of bytes of the packet copied to ULOG
 my $ulog_qthreshold = 10;  # number of packets to batch to ULOG
 
+# Default pipe for plugins
+my $def_pipe_sz = 10485760;
+
 
 sub acct_conf_globals {
     my ($intf) = @_;
@@ -67,6 +70,7 @@ sub acct_conf_globals {
     } else {
         $output .= "\n";
     }
+    $output .= "plugin_pipe_size: $def_pipe_sz\n";
     return $output;
 }
 
