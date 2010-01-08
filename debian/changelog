@@ -1,3 +1,9 @@
+vyatta-netflow (0.13) unstable; urgency=low
+
+  * Fix parsing "show ip bgp" for status "*>i".
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Fri, 08 Jan 2010 15:11:32 -0800
+
 vyatta-netflow (0.12) unstable; urgency=low
 
   * Increase default pipe size
