@@ -1,3 +1,9 @@
+vyatta-netflow (0.15) unstable; urgency=low
+
+  * Fix Bug 5310
+
+ -- Mohit Mehta <mohit.mehta@vyatta.com>  Tue, 09 Feb 2010 16:43:52 -0800
+
 vyatta-netflow (0.14) unstable; urgency=low
 
   * UNRELEASED
