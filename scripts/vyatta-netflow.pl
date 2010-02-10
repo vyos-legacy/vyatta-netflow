@@ -342,7 +342,8 @@ die "Undefined action" if ! $action;
 if ($action eq 'add-intf') {
     die "Error: must include interface\n" if ! defined $intf;
     my $interface = new Vyatta::Interface($intf);
-    die "Undefined interface [$intf]\n" if ! defined $interface;
+    print "Warning : interface [$intf] does not exist on system\n" 
+      if ! defined $interface;
     acct_log("update [$intf]");
     acct_add_ulog_target($intf);
     print "Adding flow-accounting for [$intf]\n";
