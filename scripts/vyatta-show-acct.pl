@@ -77,9 +77,10 @@ sub display_lines {
     foreach my $line (@lines) {
         my ($tag, $tag2, $class, $src_mac, $dst_mac, $vlan, $src_as, $dst_as,
             $bgp_comms, $src_bgp_comms, $as_path, $src_as_path, $pref, 
-            $src_pref, $med, $src_med, $peer_src_as, $peer_dst_as, $peer_src_ip,
-            $peer_dst_ip, $src_ip, $dst_ip, $sport, $dport, $tcp_flags, $proto, 
-            $tos, $pkts, $flows, $bytes) = split(/\s+/, $line);
+            $src_pref, $med, $src_med, $sym, $peer_src_as, $peer_dst_as, 
+            $peer_src_ip, $peer_dst_ip, $src_ip, $dst_ip, $sport, $dport, 
+            $tcp_flags, $proto, $tos, $pkts, $flows, $bytes) 
+            = split(/\s+/, $line);
 	next if !defined $src_ip or $src_ip !~ m/\d+\.\d+\.\d+\.\d+/;
         next if defined $ifindx and $ifindx ne $tag;
 	$count++;
