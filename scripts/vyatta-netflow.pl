@@ -39,6 +39,13 @@ use strict;
 my $def_nf_port = 2055;
 my $def_sf_port = 6343;
 
+# Default ULOG table/chain
+# There is some debate about whether we should hook into netfilter
+# very early (raw, PRE_ROUTING) or late (filter, VYATT_POST_FW_HOOK)
+# For a default we will choose "early" - change it to "late" to use
+# the other table/chain.
+my $table_chain_entry = "early";
+
 # ULOG tuning parameters
 my $ulog_cprange    = 64;  # number of bytes of the packet copied to ULOG
 my $ulog_qthreshold = 10;  # number of packets to batch to ULOG
@@ -46,6 +53,13 @@ my $ulog_qthreshold = 10;  # number of packets to batch to ULOG
 # Default pipe for plugins
 my $def_pipe_sz = 10485760;
 
+sub acct_get_table_chain {
+    if ($table_chain_entry eq "early") {
+        return ('raw', 'PREROUTING');
+    } else {
+        return ('filter', 'VYATTA_POST_FW_HOOK');
+    }
+}
 
 sub acct_conf_globals {
     my ($intf) = @_;
@@ -271,12 +285,11 @@ sub acct_get_config {
     return $output;
 }
 
-my $chain = 'VYATTA_POST_FW_HOOK';
-
 sub acct_add_ulog_target {
     my ($intf) = @_;
-    
-    my $cmd = "iptables -I $chain 1 -i $intf -j ULOG --ulog-nlgroup 2";
+ 
+    my ($table, $chain) = acct_get_table_chain();
+    my $cmd = "iptables -t $table -I $chain 1 -i $intf -j ULOG --ulog-nlgroup 2";
     if (defined $ulog_cprange) {
         $cmd .= " --ulog-cprange $ulog_cprange";
     }
@@ -292,7 +305,8 @@ sub acct_add_ulog_target {
 sub acct_rm_ulog_target {
     my ($intf) = @_;
     
-    my $cmd = "iptables -vnL $chain --line";
+    my ($table, $chain) = acct_get_table_chain();
+    my $cmd = "iptables -t $table -vnL $chain --line";
     my @lines = `$cmd 2> /dev/null | egrep ^[0-9]`;
     if (scalar(@lines) < 1) {
         die "Error: failed to find ULOG entry\n";
@@ -300,7 +314,7 @@ sub acct_rm_ulog_target {
     foreach my $line (@lines) {
         my ($num, undef, undef, $target, undef, undef, $in) = split /\s+/, $line;
         if (defined $in and $in eq $intf) {
-            $cmd = "iptables -D $chain $num";
+            $cmd = "iptables -t $table -D $chain $num";
             my $ret = system($cmd);
             if ($ret >> 8) {
                 die "Error: failed to delete target - $?\n";
