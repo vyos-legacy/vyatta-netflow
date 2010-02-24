@@ -1,3 +1,9 @@
+vyatta-netflow (0.18) unstable; urgency=low
+
+  * Modify output parsing needed for pmacct 0.12.1.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Wed, 24 Feb 2010 12:07:26 -0800
+
 vyatta-netflow (0.17) unstable; urgency=low
 
   * Move flow-accounting to raw/PREROUTNG hook.
