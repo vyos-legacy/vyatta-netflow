@@ -1,3 +1,9 @@
+vyatta-netflow (0.15+kenwood2) unstable; urgency=low
+
+  * Move flow-accounting to raw/PREROUTNG hook.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Fri, 26 Feb 2010 13:16:49 -0800
+
 vyatta-netflow (0.15+kenwood1) unstable; urgency=low
 
   * UNRELEASED
