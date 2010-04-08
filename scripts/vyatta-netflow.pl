@@ -13,7 +13,7 @@
 # General Public License for more details.
 # 
 # This code was originally developed by Vyatta, Inc.
-# Portions created by Vyatta are Copyright (C) 2009 Vyatta, Inc.
+# Portions created by Vyatta are Copyright (C) 2009-2010 Vyatta, Inc.
 # All Rights Reserved.
 # 
 # Author: Stig Thormodsrud
@@ -193,8 +193,7 @@ sub sflow_find_agent_ip {
         }
     }
 
-    my $cmd = "ip link show |egrep '^[0-9]:' |cut -d ':' -f 2 |cut -d ' ' -f 2";
-    my @intfs = `$cmd`;
+    my @intfs = getInterfaces();
     chomp(@intfs);
     foreach my $intf (@intfs) {
         my @ips = getIP($intf, 4);
@@ -226,12 +225,14 @@ sub acct_get_sflow {
         $agent_ip = sflow_find_agent_ip($config);
     }
     my $found = undef;
-    my @ips = getIP();
-    foreach my $ip (@ips) {
-        if ($ip =~ /^([\d.]+)\/([\d.]+)$/) { # strip /mask
-            $ip = $1
+    if (defined $agent_ip) {
+        my @ips = getIP();
+        foreach my $ip (@ips) {
+            if ($ip =~ /^([\d.]+)\/([\d.]+)$/) { # strip /mask
+                $ip = $1
+            }
+            $found = 1 if $ip eq $agent_ip;
         }
-        $found = 1 if $ip eq $agent_ip;
     }
     if (! defined $found) {
         die "agent-address [$agent_ip] not configured on system\n";
