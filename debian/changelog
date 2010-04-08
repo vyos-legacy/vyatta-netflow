@@ -1,3 +1,9 @@
+vyatta-netflow (0.19) unstable; urgency=low
+
+  * Fix 5525: sflow error if only using vlans.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 08 Apr 2010 15:37:56 -0700
+
 vyatta-netflow (0.18) unstable; urgency=low
 
   * Modify output parsing needed for pmacct 0.12.1.
