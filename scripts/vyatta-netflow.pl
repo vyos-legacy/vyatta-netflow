@@ -55,7 +55,7 @@ my $def_pipe_sz = 10485760;
 
 sub acct_get_table_chain {
     if ($table_chain_entry eq "early") {
-        return ('raw', 'PREROUTING');
+        return ('raw', 'VYATTA_PRE_CT_PREROUTING_HOOK');
     } else {
         return ('filter', 'VYATTA_POST_FW_HOOK');
     }
