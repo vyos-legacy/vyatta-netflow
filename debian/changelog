@@ -1,3 +1,9 @@
+vyatta-netflow (0.22) unstable; urgency=low
+
+  * Fix parsing of "show ip bgp" to generate correct AS/prefix.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 22 Jun 2010 15:53:07 -0700
+
 vyatta-netflow (0.21) unstable; urgency=low
 
   * Fix 5583: netflow stops working if webproxy is configure after it.Z
