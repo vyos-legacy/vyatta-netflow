@@ -63,6 +63,7 @@ open my $fd, '>', $outfile
 while ($line = get_line()) {
     if ($line =~ /Path/) {
 	$path_ndx = index($line, "Path");
+	$path_ndx -= 3; # status gets removed
 	last;
     }
 }
@@ -79,7 +80,7 @@ while ($line = get_line()) {
         $line = substr($line, 3);
 	($network, $nexthop) = split /\s+/, $line;
 	if (! $network) {
-	    print "unexpected error [$line] line $line_num\n";
+	    # print "unexpected error [$line] line $line_num\n";
 	    next;
 	}
 	if ($network eq '0.0.0.0') {
@@ -113,7 +114,7 @@ while ($line = get_line()) {
 	my $path;
 	# networks over 15 characters have the rest of the info
 	# on the next line
-	if (length($line) >= $path_ndx){
+	if (length($network) < 17){
 	    $path = substr($line, $path_ndx);
 	} else {
 	    $line = get_line();
