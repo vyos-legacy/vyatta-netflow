@@ -1,9 +1,10 @@
 type: u32
+
 default: 120
+
 help: TCP reset timeout value
 
 syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 2147483647; \
-       "Timeout value must be between 0 and 2147483647"
+       "Timeout value must be between 0 and 2147483647."
 
-comp_help: possible completions:
-  <0-2147483647>    TCP RST timeout in seconds (default 120)
+val_help: u32:0-2147483647 ; TCP RST timeout in seconds (default 120)

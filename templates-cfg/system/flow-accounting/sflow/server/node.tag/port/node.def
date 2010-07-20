@@ -1,7 +1,10 @@
 type: u32
+
 default: 6343
+
 help: SFlow port number
+
 syntax:expression: $VAR(@) > 1024 && $VAR(@) <= 65535; \
-       "Port must be between 1025 and 65535"
-comp_help: possible completions:
-  <1025-65535>     Set port number (default 6343)
+       "Port must be between 1025 and 65535."
+
+val_help: u32:1025-65535; SFlow port number (default 6343)

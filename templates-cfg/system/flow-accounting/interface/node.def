@@ -1,5 +1,7 @@
 multi:
+
 type: txt
+
 help: Interface for flow-accounting [REQUIRED]
 
 allowed: ${vyatta_sbindir}/vyatta-interfaces.pl --show all
@@ -8,3 +10,4 @@ create: sudo ${vyatta_sbindir}/vyatta-netflow.pl --action add-intf --intf '$VAR(
 
 delete: sudo ${vyatta_sbindir}/vyatta-netflow.pl --action del-intf --intf '$VAR(@)'
 
+val_help: <intf> ; Interface for flow-accounting

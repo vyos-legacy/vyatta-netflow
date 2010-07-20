@@ -3,6 +3,6 @@ help: Flow accounting settings
 priority: 990 # Run after protocols and interfaces are configured
 
 commit:expression: $VAR(./interface/@@) != ""; \
-                   "At least one interface must be configured"
+                   "At least one interface must be configured."
 
 end: sudo /opt/vyatta/sbin/vyatta-netflow.pl --action update

@@ -1,3 +1,5 @@
 tag:
+
 type: ipv4
+
 help: Server to export NetFlow [REQUIRED]
