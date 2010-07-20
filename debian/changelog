@@ -1,3 +1,10 @@
+vyatta-netflow (0.23) unstable; urgency=low
+
+  * clean up netflow help strings
+  * change comp_help to val_help.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Mon, 19 Jul 2010 17:54:19 -0700
+
 vyatta-netflow (0.22) unstable; urgency=low
 
   * Fix parsing of "show ip bgp" to generate correct AS/prefix.
