@@ -1,6 +1,6 @@
 type: u32
 default: 6343
-help: Set listen port
+help: SFlow port number
 syntax:expression: $VAR(@) > 1024 && $VAR(@) <= 65535; \
        "Port must be between 1025 and 65535"
 comp_help: possible completions:

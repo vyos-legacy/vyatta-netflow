@@ -1,5 +1,5 @@
 type: txt
-help: Set sflow agent IPv4 address
+help: SFlow agent IPv4 address
 
 default: "auto"
 

@@ -1,6 +1,6 @@
 type: u32
 default: 3600
-help: Set flow generic timeout value
+help: Generic flow timeout value
 
 syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 2147483647; \
        "Timeout value must be between 0 and 2147483647"

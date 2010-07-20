@@ -1,4 +1,4 @@
-help: Set flow accounting
+help: Flow accounting settings
 
 priority: 990 # Run after protocols and interfaces are configured
 

@@ -1,6 +1,6 @@
 type: u32
 default: 300
-help: Set udp timeout value
+help: UDP timeout value
 
 syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 2147483647; \
        "Timeout value must be between 0 and 2147483647"

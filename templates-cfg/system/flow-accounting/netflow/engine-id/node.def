@@ -1,5 +1,5 @@
 type: u32
-help: Set the engine-id
+help: NetFlow engine-id
 syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 255; \
        "engine-id must be between 0-255"
 comp_help: possible completions:
