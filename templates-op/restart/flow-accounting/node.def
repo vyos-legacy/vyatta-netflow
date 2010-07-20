@@ -1,0 +1,2 @@
+help: Restart flow-accounting service
+run: sudo /opt/vyatta/bin/sudo-users/vyatta-show-acct.pl --action 'restart'
