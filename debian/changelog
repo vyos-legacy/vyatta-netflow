@@ -1,3 +1,9 @@
+vyatta-netflow (0.24+larkspur1) unstable; urgency=low
+
+  * UNRELEASED
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Thu, 22 Jul 2010 17:18:45 -0700
+
 vyatta-netflow (0.24) unstable; urgency=low
 
   * part of fix for BZ 5839 - move clear process cmds under restart
