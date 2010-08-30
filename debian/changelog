@@ -1,3 +1,9 @@
+vyatta-netflow (0.27) unstable; urgency=low
+
+  * Change parsing to work with pmacct 0.12.3 output.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Mon, 30 Aug 2010 14:11:24 -0700
+
 vyatta-netflow (0.26) unstable; urgency=low
 
   * Increase netflow buffer size.
