@@ -1,3 +1,9 @@
+vyatta-netflow (0.28) unstable; urgency=low
+
+  * Fix 6125: iptables errors on boot up of mendocino
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Tue, 31 Aug 2010 16:11:32 -0700
+
 vyatta-netflow (0.27) unstable; urgency=low
 
   * Change parsing to work with pmacct 0.12.3 output.
