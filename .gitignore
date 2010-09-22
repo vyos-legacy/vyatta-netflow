@@ -20,6 +20,7 @@ libtool
 /debian/vyatta-netflow
 /debian/vyatta-netflow.postinst
 /debian/vyatta-netflow.debhelper.log
+/debian/vyatta-netflow.substvars
 /INSTALL
 /Makefile.in
 /Makefile

@@ -41,7 +41,7 @@ my $def_sf_port = 6343;
 
 # Default ULOG table/chain
 # There is some debate about whether we should hook into netfilter
-# very early (raw, PRE_ROUTING) or late (filter, VYATT_POST_FW_HOOK)
+# very early (raw, PRE_ROUTING) or late (filter, VYATTA_POST_FW_FWD_HOOK)
 # For a default we will choose "early" - change it to "late" to use
 # the other table/chain.
 my $table_chain_entry = "early";
@@ -57,11 +57,14 @@ my $def_pipe_sz = (10 * 1024 * 1024);
 my $def_buf_sz  = int($def_pipe_sz / 1024);
 
 sub acct_get_table_chain {
+    my %chain_table = ();
     if ($table_chain_entry eq "early") {
-        return ('raw', 'VYATTA_CT_PREROUTING_HOOK');
+	%chain_table = ("VYATTA_CT_PREROUTING_HOOK" => "raw");
     } else {
-        return ('filter', 'VYATTA_POST_FW_HOOK');
+	%chain_table = ("VYATTA_POST_FW_IN_HOOK"  => "filter",
+			"VYATTA_POST_FW_FWD_HOOK" => "filter");
     }
+    return (\%chain_table);
 }
 
 sub acct_conf_globals {
@@ -294,41 +297,48 @@ sub acct_get_config {
 sub acct_add_ulog_target {
     my ($intf) = @_;
  
-    my ($table, $chain) = acct_get_table_chain();
-    my $cmd = "iptables -t $table -I $chain 1 -i $intf -j ULOG --ulog-nlgroup 2";
-    if (defined $ulog_cprange) {
-        $cmd .= " --ulog-cprange $ulog_cprange";
-    }
-    if (defined $ulog_qthreshold) {
-        $cmd .= " --ulog-qthreshold $ulog_qthreshold";
-    }
-    my $ret = system($cmd);
-    if ($ret >> 8) {
-        die "Error: [$cmd] failed - $?\n";
+    my ($table_chain) = acct_get_table_chain();
+    while ( my ($chain, $table) = each(%$table_chain) ) {
+        my $cmd = "iptables -t $table -I $chain 1 -i $intf -j ULOG" . 
+		  " --ulog-nlgroup 2";
+        if (defined $ulog_cprange) {
+            $cmd .= " --ulog-cprange $ulog_cprange";
+        }
+        if (defined $ulog_qthreshold) {
+            $cmd .= " --ulog-qthreshold $ulog_qthreshold";
+        }
+        my $ret = system($cmd);
+        if ($ret >> 8) {
+            die "Error: [$cmd] failed - $?\n";
+        }
     }
 }
 
 sub acct_rm_ulog_target {
     my ($intf) = @_;
     
-    my ($table, $chain) = acct_get_table_chain();
-    my $cmd = "iptables -t $table -vnL $chain --line";
-    my @lines = `$cmd 2> /dev/null | egrep ^[0-9]`;
-    if (scalar(@lines) < 1) {
-        die "Error: failed to find ULOG entry\n";
-    }
-    foreach my $line (@lines) {
-        my ($num, undef, undef, $target, undef, undef, $in) = split /\s+/, $line;
-        if (defined $in and $in eq $intf) {
-            $cmd = "iptables -t $table -D $chain $num";
-            my $ret = system($cmd);
-            if ($ret >> 8) {
-                die "Error: failed to delete target - $?\n";
-            }
-            return;
+    my ($table_chain) = acct_get_table_chain();
+    while ( my ($chain, $table) = each(%$table_chain) ) {
+        my $cmd = "iptables -t $table -vnL $chain --line";
+        my @lines = `$cmd 2> /dev/null | egrep ^[0-9]`;
+        if (scalar(@lines) < 1) {
+            die "Error: failed to find ULOG entry for $chain => $table\n";
         }
+        my $found_target = 'false';
+        foreach my $line (@lines) {
+            my ($num, undef, undef, $target, undef, undef, $in) = split /\s+/, $line;
+            if (defined $in and $in eq $intf) {
+                $cmd = "iptables -t $table -D $chain $num";
+                my $ret = system($cmd);
+                if ($ret >> 8) {
+                    die "Error: failed to delete target - $?\n";
+                }
+                $found_target = 'true';
+                last;
+            }
+        }
+        die "Error: failed to find target\n" if $found_target eq 'false';
     }
-    die "Error: failed to find target\n";
 }
 
 sub acct_get_int_map {
