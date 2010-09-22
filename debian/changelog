@@ -1,3 +1,10 @@
+vyatta-netflow (0.30) unstable; urgency=low
+
+  * * enable collection on IN and FWD post_fw hooks when collection is
+    done "late"
+
+ -- Mohit Mehta <mohit@vyatta.com>  Tue, 21 Sep 2010 17:41:28 -0700
+
 vyatta-netflow (0.29) unstable; urgency=low
 
   * UNRELEASED
