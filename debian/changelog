@@ -1,3 +1,9 @@
+vyatta-netflow (0.31+mendocino1) unstable; urgency=low
+
+  * new branch
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Tue, 28 Dec 2010 20:38:21 +0000
+
 vyatta-netflow (0.31) unstable; urgency=low
 
   * remove deprecated linda file
