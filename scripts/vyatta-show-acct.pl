@@ -129,7 +129,7 @@ sub show_acct_port {
 }
 
 sub clear_acct {
-    print "clearings flow-accounting\n";
+    print "clearing flow-accounting\n";
     my $pipe_file = acct_get_pipe_file();
     system("$pmacct -p $pipe_file -e");
 }
