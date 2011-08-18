@@ -1,3 +1,9 @@
+vyatta-netflow (0.35) unstable; urgency=low
+
+  * increase netlink buffer size
+
+ -- Stephen Hemminger <shemminger@vyatta.com>  Thu, 18 Aug 2011 10:58:11 -0700
+
 vyatta-netflow (0.34) unstable; urgency=low
 
   * new branch
