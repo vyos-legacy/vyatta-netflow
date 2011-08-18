@@ -50,7 +50,7 @@ my $table_chain_entry = "early";
 my $ulog_cprange    = 64;  # number of bytes of the packet copied to ULOG
 my $ulog_qthreshold = 10;  # number of packets to batch to ULOG
 my $ulog_nl_sz      = (2 * 1024 *1024);
-
+my $ulog_nl_buf     = (32 * 1024);
 
 # Default pipe for plugins
 my $def_pipe_sz = (10 * 1024 * 1024);
@@ -81,6 +81,7 @@ sub acct_conf_globals {
     $output .= "imt_path:  $pipe_file\n";
     $output .= "uacctd_group: 2\n";
     $output .= "uacctd_nl_size: $ulog_nl_sz\n";
+    $output .= "snaplen: $ulog_nl_buf\n";
     $output .= "refresh_maps: true\n";
     $output .= "pre_tag_map: /etc/pmacct/int_map\n";
     $output .= "aggregate: tag,src_mac,dst_mac,vlan,src_host,dst_host";
