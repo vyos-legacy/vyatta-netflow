@@ -1,3 +1,9 @@
+vyatta-netflow (0.36) unstable; urgency=low
+
+  * Increase number of memory pool descriptors
+
+ -- Stephen Hemminger <shemminger@vyatta.com>  Tue, 23 Aug 2011 10:28:38 -0700
+
 vyatta-netflow (0.35) unstable; urgency=low
 
   * increase netlink buffer size
