@@ -81,7 +81,7 @@ sub acct_conf_globals {
     $output .= "promisc:   false\n";
     $output .= "pidfile:   $pid_file\n";
     $output .= "imt_path:  $pipe_file\n";
-    $output .= "imt_mempools_number: $mempools\n";
+    $output .= "imt_mem_pools_number: $mempools\n";
     $output .= "uacctd_group: 2\n";
     $output .= "uacctd_nl_size: $ulog_nl_sz\n";
     $output .= "snaplen: $ulog_nl_buf\n";
