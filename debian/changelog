@@ -1,3 +1,9 @@
+vyatta-netflow (0.38) unstable; urgency=low
+
+  * new branch
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Sat, 03 Mar 2012 02:26:08 -0800
+
 vyatta-netflow (0.37) unstable; urgency=low
 
   * fix typo in last mempools change
