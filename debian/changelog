@@ -1,3 +1,9 @@
+vyatta-netflow (0.39) unstable; urgency=low
+
+  * Fixing 8073.
+
+ -- Gaurav Sinha <gaurav.sinha@vyatta.com>  Tue, 08 May 2012 14:13:44 -0700
+
 vyatta-netflow (0.38) unstable; urgency=low
 
   * new branch
