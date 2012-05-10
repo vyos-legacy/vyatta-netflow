@@ -47,7 +47,7 @@ my $def_sf_port = 6343;
 my $table_chain_entry = "early";
 
 # ULOG tuning parameters
-my $ulog_cprange    = 50;  # number of bytes of the packet copied to ULOG
+my $ulog_cprange    = 64;  # number of bytes of the packet copied to ULOG
 my $ulog_qthreshold = 10;  # number of packets to batch to ULOG
 my $ulog_nl_sz      = (2 * 1024 *1024);
 my $ulog_nl_buf     = (32 * 1024);
