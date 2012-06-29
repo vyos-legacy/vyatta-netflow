@@ -51,6 +51,8 @@ my $ulog_cprange    = 64;  # number of bytes of the packet copied to ULOG
 my $ulog_qthreshold = 10;  # number of packets to batch to ULOG
 my $ulog_nl_sz      = (2 * 1024 *1024);
 my $ulog_nl_buf     = (32 * 1024);
+my $mempools	    = 169; # number of memory pool descriptors
+		           #  (169+1) * sizeof(struct memory_pool_desc) = 4K
 
 # Default pipe for plugins
 my $def_pipe_sz = (10 * 1024 * 1024);
@@ -79,6 +81,7 @@ sub acct_conf_globals {
     $output .= "promisc:   false\n";
     $output .= "pidfile:   $pid_file\n";
     $output .= "imt_path:  $pipe_file\n";
+    $output .= "imt_mem_pools_number: $mempools\n";
     $output .= "uacctd_group: 2\n";
     $output .= "uacctd_nl_size: $ulog_nl_sz\n";
     $output .= "snaplen: $ulog_nl_buf\n";
