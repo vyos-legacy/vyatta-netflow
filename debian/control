@@ -11,7 +11,7 @@ Depends: perl,
  vyatta-cfg,
  vyatta-cfg-system,
  vyatta-op,
- pmacct
+ pmacct (>= 0.14.0)
 Description: Vyatta commands for netflow
  Vyatta configuration/operational templates and scripts for the netflow/sflow
  system (pmacct).
