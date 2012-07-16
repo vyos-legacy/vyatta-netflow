@@ -1,3 +1,10 @@
+vyatta-netflow (0.41) unstable; urgency=low
+
+  * Add new field that new pmacct has
+  * Make package depend on new version of pmacct
+
+ -- John Southworth <john.southworth@vyatta.com>  Mon, 16 Jul 2012 10:58:17 -0700
+
 vyatta-netflow (0.40) unstable; urgency=low
 
   * Revert "Fixing 8073." Fixed upstream in iptables, reverting to old
