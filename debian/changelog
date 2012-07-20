@@ -1,3 +1,18 @@
+vyatta-netflow (0.33+napa3) unstable; urgency=low
+
+  [ Deepti Kulkarni ]
+  * new branch
+  * 0.33+napa1
+
+  [ Stephen Hemminger ]
+  * increase netlink buffer size
+  * 0.33+napa2
+
+  [ John Southworth ]
+  * Add new field that new pmacct has
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 20 Jul 2012 12:47:02 -0700
+
 vyatta-netflow (0.33+napa2) unstable; urgency=low
 
   * increase netlink buffer size
