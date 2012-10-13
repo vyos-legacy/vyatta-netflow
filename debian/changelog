@@ -1,3 +1,9 @@
+vyatta-netflow (0.41+pacifica2) unstable; urgency=low
+
+  * new branch
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 12 Oct 2012 18:48:56 -0700
+
 vyatta-netflow (0.41+pacifica1) unstable; urgency=low
 
   * new branch
