@@ -1,3 +1,9 @@
+vyatta-netflow (0.42+vyos1+helium1) unstable; urgency=low
+
+  * New branch
+
+ -- Daniil Baturin <daniil@baturin.org>  Mon, 03 Mar 2014 23:33:58 +0100
+
 vyatta-netflow (0.42+hydrogen1) unstable; urgency=low
 
   * New branch
