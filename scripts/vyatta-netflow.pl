@@ -143,6 +143,7 @@ sub acct_get_netflow {
     my $engine_id = $config->returnValue('engine-id');
     $engine_id = 0 if ! defined $engine_id;
     my $sampling  = $config->returnValue('sampling-rate');
+    my $source_ip = $config->returnValue('source-ip');
 
     $config->setLevel("$path netflow timeout");   
     my $timeout_str = '';
@@ -160,6 +161,7 @@ sub acct_get_netflow {
 	$server_port    =~ s/-/:/;	
 	$output .= "nfprobe_receiver[$name]: $server_port\n";
 	$output .= "nfprobe_version[$name]: $version\n" if defined $version;
+	$output .= "nfprobe_source_ip[$name]: $source_ip\n" if defined $source_ip;
 	$output .= "nfprobe_engine[$name]: $engine_id:0\n";
 	$output .= "nfprobe_timeouts[$name]: $timeout_str\n"
 	    if $timeout_str ne '';
