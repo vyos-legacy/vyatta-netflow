@@ -1,7 +1,7 @@
 Source: vyatta-netflow
 Section: contrib/net
 Priority: extra
-Maintainer: Vyatta Package Maintainers <maintainers@vyatta.com>
+Maintainer: VyOS Package Maintainers <maintainers@vyos.net>
 Build-Depends: debhelper (>= 5), autotools-dev
 Standards-Version: 3.7.2
 
@@ -12,6 +12,6 @@ Depends: perl,
  vyatta-cfg-system,
  vyatta-op,
  pmacct (>= 0.14.0)
-Description: Vyatta commands for netflow
- Vyatta configuration/operational templates and scripts for the netflow/sflow
+Description: VyOS commands for netflow
+ VyOS configuration/operational templates and scripts for the netflow/sflow
  system (pmacct).
