@@ -1,8 +1,0 @@
-type: u32
-
-help: Set sFlow agentid
-
-syntax:expression: ($VAR(@) >= 0 && $VAR(@) < 65536) ; \
-       "SFlow agentid must be between 0 and 65535."
-
-val_help: u32:0-65535 ; SFlow subagent id
