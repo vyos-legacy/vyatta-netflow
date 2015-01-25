@@ -1,3 +1,10 @@
+vyatta-netflow (0.42+vyos2+lithium5) unstable; urgency=low
+
+  [ Alex Harpin ]
+  * vyatta-netflow: remove unused / old configuration nodes
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Sun, 25 Jan 2015 10:37:52 +0000
+ 
 vyatta-netflow (0.42+vyos2+lithium4) unstable; urgency=low
 
   * Update maintainer address
