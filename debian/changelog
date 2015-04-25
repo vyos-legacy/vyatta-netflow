@@ -1,3 +1,10 @@
+vyatta-netflow (0.42+vyos2+lithium6) unstable; urgency=low
+
+  * Bug #325: Add option to configure nfprobe_maxflows (maximum
+    concurrent flows) under netflow
+
+ -- Daniil Baturin <daniil@baturin.org>  Sat, 25 Apr 2015 15:30:36 +0200
+
 vyatta-netflow (0.42+vyos2+lithium5) unstable; urgency=low
 
   [ Alex Harpin ]
