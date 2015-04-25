@@ -144,6 +144,7 @@ sub acct_get_netflow {
     $engine_id = 0 if ! defined $engine_id;
     my $sampling  = $config->returnValue('sampling-rate');
     my $source_ip = $config->returnValue('source-ip');
+    my $maxflows  = $config->returnValue('max-flows');
 
     $config->setLevel("$path netflow timeout");   
     my $timeout_str = '';
@@ -165,6 +166,7 @@ sub acct_get_netflow {
 	$output .= "nfprobe_engine[$name]: $engine_id:0\n";
 	$output .= "nfprobe_timeouts[$name]: $timeout_str\n"
 	    if $timeout_str ne '';
+        $output .= "nfprobe_maxflows[$name]: $maxflows\n" if defined $maxflows;
         $output .= "sampling_rate[$name]: $sampling\n" if defined $sampling;
     }
 
