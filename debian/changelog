@@ -1,3 +1,9 @@
+vyatta-netflow (0.42+vyos2+lithium7) unstable; urgency=low
+
+  * Force release
+
+ -- Daniil Baturin <daniil@baturin.org>  Sat, 25 Apr 2015 15:31:09 +0200
+
 vyatta-netflow (0.42+vyos2+lithium6) unstable; urgency=low
 
   * Bug #325: Add option to configure nfprobe_maxflows (maximum
