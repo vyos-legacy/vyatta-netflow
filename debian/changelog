@@ -1,3 +1,9 @@
+vyatta-netflow (0.42+vyos2+lithium9) unstable; urgency=low
+
+  * Fix unit in buffer-size help.
+
+ -- Daniil Baturin <daniil@baturin.org>  Thu, 30 Apr 2015 18:23:23 +0200
+
 vyatta-netflow (0.42+vyos2+lithium8) unstable; urgency=low
 
   * Bug #139: expose pmacct pipe_size option (as 'buffer-size').
