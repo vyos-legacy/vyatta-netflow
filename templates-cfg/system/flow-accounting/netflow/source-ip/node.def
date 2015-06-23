@@ -1,3 +1,5 @@
 type: ipv4
-
-help: Source IP address of NetFlow packets
+type: ipv6
+help: IPv4 or IPv6 source address of NetFlow packets
+val_help: ipv4; IPv4 source address of NetFlow packets
+val_help: ipv6; IPv6 source address of NetFlow packets
