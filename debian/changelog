@@ -1,3 +1,9 @@
+vyatta-netflow (0.42+vyos2+lithium11) unstable; urgency=low
+
+  * vyatta-netflow: allow ipv6 source ip address for netflow packets
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Tue, 23 Jun 2015 07:57:51 +0100
+ 
 vyatta-netflow (0.42+vyos2+lithium10) unstable; urgency=low
 
   * vyatta-netflow: update dh_gencontrol with new development build flag
