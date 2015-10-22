@@ -1,25 +1,25 @@
 #!/usr/bin/perl
 #
 # Module: vyatta-netflow.pl
-# 
+#
 # **** License ****
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
 # published by the Free Software Foundation.
-# 
+#
 # This program is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
-# 
+#
 # This code was originally developed by Vyatta, Inc.
 # Portions created by Vyatta are Copyright (C) 2009-2010 Vyatta, Inc.
 # All Rights Reserved.
-# 
+#
 # Author: Stig Thormodsrud
 # Date: June 2009
 # Description: Script to configure netflow/sflow (pmacct).
-# 
+#
 # **** End License ****
 #
 
@@ -52,7 +52,8 @@ my $ulog_qthreshold = 10;  # number of packets to batch to ULOG
 my $ulog_nl_sz      = (2 * 1024 *1024);
 my $ulog_nl_buf     = (32 * 1024);
 my $mempools	    = 169; # number of memory pool descriptors
-		           #  (169+1) * sizeof(struct memory_pool_desc) = 4K
+
+#  (169+1) * sizeof(struct memory_pool_desc) = 4K
 
 # Default pipe for plugins
 my $default_pipe_size = 10; # 10 MB
@@ -60,10 +61,12 @@ my $default_pipe_size = 10; # 10 MB
 sub acct_get_table_chain {
     my %chain_table = ();
     if ($table_chain_entry eq "early") {
-	%chain_table = ("VYATTA_CT_PREROUTING_HOOK" => "raw");
+        %chain_table = ("VYATTA_CT_PREROUTING_HOOK" => "raw");
     } else {
-	%chain_table = ("VYATTA_POST_FW_IN_HOOK"  => "filter",
-			"VYATTA_POST_FW_FWD_HOOK" => "filter");
+        %chain_table = (
+            "VYATTA_POST_FW_IN_HOOK"  => "filter",
+            "VYATTA_POST_FW_FWD_HOOK" => "filter"
+        );
     }
     return (\%chain_table);
 }
@@ -93,6 +96,7 @@ sub acct_conf_globals {
     $output .= "pre_tag_map: /etc/pmacct/int_map\n";
     $output .= "aggregate: tag,src_mac,dst_mac,vlan,src_host,dst_host";
     $output .= ",src_port,dst_port,proto,tos,flows";
+
     if (-e '/etc/pmacct/networks.lst') {
         $output .= ",src_as,dst_as\n";
         $output .= "networks_file: /etc/pmacct/networks.lst\n";
@@ -120,15 +124,15 @@ sub acct_get_collector_names {
 
     my @names;
     my $path = 'system flow-accounting';
-    $config->setLevel("$path $nf_sf server"); 
+    $config->setLevel("$path $nf_sf server");
     my @servers = $config->listNodes();
     if (scalar(@servers)) {
-	foreach my $server (@servers) {
-	    $config->setLevel("$path $nf_sf server $server");   
-	    my $port = $config->returnValue('port');
-	    $port = $def_nf_port if ! defined $port;
-	    push @names, "$server-$port";
-	}
+        foreach my $server (@servers) {
+            $config->setLevel("$path $nf_sf server $server");
+            my $port = $config->returnValue('port');
+            $port = $def_nf_port if !defined $port;
+            push @names, "$server-$port";
+        }
     }
     return @names;
 }
@@ -140,51 +144,51 @@ sub acct_get_netflow {
     my $output = undef;
 
     $config->setLevel($path);
-    return $output if ! $config->exists('netflow');
+    return $output if !$config->exists('netflow');
 
-    $config->setLevel("$path netflow");   
+    $config->setLevel("$path netflow");
     my $version   = $config->returnValue('version');
     my $engine_id = $config->returnValue('engine-id');
-    $engine_id = 0 if ! defined $engine_id;
+    $engine_id = 0 if !defined $engine_id;
     my $sampling  = $config->returnValue('sampling-rate');
     my $source_ip = $config->returnValue('source-ip');
     my $maxflows  = $config->returnValue('max-flows');
 
-    $config->setLevel("$path netflow timeout");   
+    $config->setLevel("$path netflow timeout");
     my $timeout_str = '';
     foreach my $timeout (keys %timeout_hash) {
-	my $value = $config->returnValue($timeout);
-	if ($value and $timeout_hash{$timeout}) {
-	    $timeout_str .= ":" if $timeout_str ne '';
-	    $timeout_str .= "$timeout_hash{$timeout}=$value";
-	}
+        my $value = $config->returnValue($timeout);
+        if ($value and $timeout_hash{$timeout}) {
+            $timeout_str .= ":" if $timeout_str ne '';
+            $timeout_str .= "$timeout_hash{$timeout}=$value";
+        }
     }
 
     my @names = acct_get_collector_names($config, 'netflow');
     foreach my $name (@names) {
-	my $server_port = $name;
-	$server_port    =~ s/-/:/;
-	$output .= "nfprobe_receiver[$name]: $server_port\n";
-	$output .= "nfprobe_version[$name]: $version\n" if defined $version;
-	$output .= "nfprobe_source_ip[$name]: $source_ip\n" if defined $source_ip;
-	$output .= "nfprobe_engine[$name]: $engine_id:0\n";
-	$output .= "nfprobe_timeouts[$name]: $timeout_str\n"
-	    if $timeout_str ne '';
+        my $server_port = $name;
+        $server_port    =~ s/-/:/;
+        $output .= "nfprobe_receiver[$name]: $server_port\n";
+        $output .= "nfprobe_version[$name]: $version\n" if defined $version;
+        $output .= "nfprobe_source_ip[$name]: $source_ip\n" if defined $source_ip;
+        $output .= "nfprobe_engine[$name]: $engine_id:0\n";
+        $output .= "nfprobe_timeouts[$name]: $timeout_str\n"
+            if $timeout_str ne '';
         $output .= "nfprobe_maxflows[$name]: $maxflows\n" if defined $maxflows;
         $output .= "sampling_rate[$name]: $sampling\n" if defined $sampling;
     }
     return $output;
-} 
+}
 
 sub sflow_find_agent_ip {
     my ($config) = @_;
-    
+
     my $router_id = undef;
     my $path = 'protocols';
     $config->setLevel($path);
     if ($config->exists('bgp')) {
         $config->setLevel("$path bgp");
-        my @AS = $config->listNodes();   
+        my @AS = $config->listNodes();
         if (scalar(@AS) > 0) {
             $config->setLevel("$path bgp $AS[0] parameters");
             $router_id = $config->returnValue('router-id');
@@ -218,7 +222,7 @@ sub sflow_find_agent_ip {
         my @ips = getIP($intf, 4);
         foreach my $ip (@ips) {
             if ($ip =~ /^([\d.]+)\/([\d.]+)$/) { # strip /mask
-                $ip = $1
+                $ip = $1;
             }
             next if $ip eq '127.0.0.1';
             return $ip;
@@ -234,9 +238,9 @@ sub acct_get_sflow {
     my $output = undef;
 
     $config->setLevel($path);
-    return $output if ! $config->exists('sflow');
+    return $output if !$config->exists('sflow');
 
-    $config->setLevel("$path sflow"); 
+    $config->setLevel("$path sflow");
     my $agent    = $config->returnValue('agentid');
     my $agent_ip = $config->returnValue('agent-address');
     my $sampling  = $config->returnValue('sampling-rate');
@@ -248,22 +252,22 @@ sub acct_get_sflow {
         my @ips = getIP();
         foreach my $ip (@ips) {
             if ($ip =~ /^([\d.]+)\/([\d.]+)$/) { # strip /mask
-                $ip = $1
+                $ip = $1;
             }
             $found = 1 if $ip eq $agent_ip;
         }
     }
-    if (! defined $found) {
+    if (!defined $found) {
         die "agent-address [$agent_ip] not configured on system\n";
     }
 
     my @names = acct_get_collector_names($config, 'sflow');
     foreach my $name (@names) {
-	my $server_port = $name;
-	$server_port    =~ s/-/:/;
-	$output .= "sfprobe_receiver[$name]: $server_port\n";
-	$output .= "sfprobe_agentip[$name]: $agent_ip\n" if $agent_ip;
-	$output .= "sfprobe_agentsubid[$name]: $agent\n" if $agent;
+        my $server_port = $name;
+        $server_port    =~ s/-/:/;
+        $output .= "sfprobe_receiver[$name]: $server_port\n";
+        $output .= "sfprobe_agentip[$name]: $agent_ip\n" if $agent_ip;
+        $output .= "sfprobe_agentsubid[$name]: $agent\n" if $agent;
         $output .= "sampling_rate[$name]: $sampling\n" if defined $sampling;
     }
 
@@ -271,7 +275,7 @@ sub acct_get_sflow {
 }
 
 sub acct_get_config {
-    
+
     my $config = new Vyatta::Config;
     my $output = '';
     my $path   = 'system flow-accounting';
@@ -281,22 +285,22 @@ sub acct_get_config {
     $config->setLevel($path);
     my $facility = $config->returnValue('syslog-facility');
     $output .= "syslog: $facility\n" if defined $facility;
-    
+
     my $plugins = 'plugins: memory';
     my $netflow = acct_get_netflow($config);
     if (defined $netflow) {
-	my @names = acct_get_collector_names($config, 'netflow');
-	foreach my $name (@names) {
-	    $plugins .= ",nfprobe[$name]";
-	}
+        my @names = acct_get_collector_names($config, 'netflow');
+        foreach my $name (@names) {
+            $plugins .= ",nfprobe[$name]";
+        }
     }
 
     my $sflow   = acct_get_sflow($config);
     if (defined $sflow) {
-	my @names = acct_get_collector_names($config, 'sflow');
-	foreach my $name (@names) {
-	    $plugins .= ",sfprobe[$name]";
-	}
+        my @names = acct_get_collector_names($config, 'sflow');
+        foreach my $name (@names) {
+            $plugins .= ",sfprobe[$name]";
+        }
     }
 
     $output .= "$plugins\n";
@@ -307,11 +311,10 @@ sub acct_get_config {
 
 sub acct_add_ulog_target {
     my ($intf) = @_;
- 
+
     my ($table_chain) = acct_get_table_chain();
-    while ( my ($chain, $table) = each(%$table_chain) ) {
-        my $cmd = "iptables -t $table -I $chain 1 -i $intf -j ULOG" . 
-		  " --ulog-nlgroup 2";
+    while (my ($chain, $table) = each(%$table_chain)) {
+        my $cmd = "iptables -t $table -I $chain 1 -i $intf -j ULOG" ." --ulog-nlgroup 2";
         if (defined $ulog_cprange) {
             $cmd .= " --ulog-cprange $ulog_cprange";
         }
@@ -327,9 +330,9 @@ sub acct_add_ulog_target {
 
 sub acct_rm_ulog_target {
     my ($intf) = @_;
-    
+
     my ($table_chain) = acct_get_table_chain();
-    while ( my ($chain, $table) = each(%$table_chain) ) {
+    while (my ($chain, $table) = each(%$table_chain)) {
         my $cmd = "iptables -t $table -vnL $chain --line";
         my @lines = `$cmd 2> /dev/null | egrep ^[0-9]`;
         if (scalar(@lines) < 1) {
@@ -367,24 +370,24 @@ sub acct_get_int_map {
     return $output;
 }
 
-
 #
 # main
 #
 
 my ($action, $intf);
 
-GetOptions("action=s"      => \$action,
-           "intf=s"        => \$intf,
+GetOptions(
+    "action=s"      => \$action,
+    "intf=s"        => \$intf,
 );
 
-die "Undefined action" if ! $action;
+die "Undefined action" if !$action;
 
 if ($action eq 'add-intf') {
-    die "Error: must include interface\n" if ! defined $intf;
+    die "Error: must include interface\n" if !defined $intf;
     my $interface = new Vyatta::Interface($intf);
-    print "Warning : interface [$intf] does not exist on system\n" 
-      if ! defined $interface;
+    print "Warning : interface [$intf] does not exist on system\n"
+        if !defined $interface;
     acct_log("update [$intf]");
     acct_add_ulog_target($intf);
     print "Adding flow-accounting for [$intf]\n";
@@ -392,14 +395,14 @@ if ($action eq 'add-intf') {
 }
 
 if ($action eq 'del-intf') {
-    die "Error: must include interface\n" if ! defined $intf;
+    die "Error: must include interface\n" if !defined $intf;
     acct_log("stop [$intf]");
     acct_rm_ulog_target($intf);
     print "Removing flow-accounting for [$intf]\n";
     exit 0;
 }
 
-if ($action eq 'update') { 
+if ($action eq 'update') {
     acct_log("update");
     my $config = new Vyatta::Config;
 
@@ -414,10 +417,11 @@ if ($action eq 'update') {
             acct_log("conf file written");
             restart_daemon($conf_file);
         } else {
+
             # on reboot, the conf should match
             # but we still need to start it
-            my $pid_file  = acct_get_pid_file();               
-            if (! is_running($pid_file)) {
+            my $pid_file  = acct_get_pid_file();
+            if (!is_running($pid_file)) {
                 start_daemon($conf_file);
             } elsif ($map_changed) {
                 acct_log("signal reread mapping");
