@@ -286,12 +286,20 @@ sub acct_get_config {
     my $facility = $config->returnValue('syslog-facility');
     $output .= "syslog: $facility\n" if defined $facility;
 
-    my $plugins = 'plugins: memory';
+    my $plugins = '';
+    if (!defined($config->returnValue('disable-imt'))) {
+        $plugins = 'plugins: memory';
+    }
+
     my $netflow = acct_get_netflow($config);
     if (defined $netflow) {
         my @names = acct_get_collector_names($config, 'netflow');
         foreach my $name (@names) {
-            $plugins .= ",nfprobe[$name]";
+            if ($plugins eq '') {
+                $plugins .= "plugins: nfprobe[$name]";
+            } else {
+                $plugins .= ",nfprobe[$name]";
+            }
         }
     }
 
@@ -299,8 +307,16 @@ sub acct_get_config {
     if (defined $sflow) {
         my @names = acct_get_collector_names($config, 'sflow');
         foreach my $name (@names) {
-            $plugins .= ",sfprobe[$name]";
+            if ($plugins eq '') {
+                $plugins .= "sfprobe[$name]";
+            } else {
+                $plugins .= ",sfprobe[$name]";
+            }
         }
+    }
+
+    if ($plugins eq '') {
+        die "no plugins defined, you need to enable either imt, netflow or sflow\n";
     }
 
     $output .= "$plugins\n";
