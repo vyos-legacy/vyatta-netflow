@@ -1,3 +1,12 @@
+vyatta-netflow (0.42+vyos2+lithium12) unstable; urgency=low
+
+  [ Alex Harpin ]
+  * vyatta-netflow: formatting changes for style consistency
+  * vyatta-netflow: add 'set system flow-accounting disable-imt' option
+  * vyatta-netflow: ensure plugin buffer size is a factor of pipe size
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Sun, 25 Oct 2015 16:43:08 +0000
+ 
 vyatta-netflow (0.42+vyos2+lithium11) unstable; urgency=low
 
   * vyatta-netflow: allow ipv6 source ip address for netflow packets
