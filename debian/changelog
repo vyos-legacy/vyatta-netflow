@@ -1,3 +1,12 @@
+vyatta-netflow (0.42+vyos2+current1) unstable; urgency=medium
+
+  [ Thomas Jepp ]
+  * Fix build depends.
+
+  [ Kim Hagen ]
+
+ -- Kim Hagen <kim.sidney@gmail.com>  Sun, 24 Jan 2016 15:18:29 -0500
+
 vyatta-netflow (0.42+vyos2+lithium12) unstable; urgency=low
 
   [ Alex Harpin ]
