@@ -1,3 +1,24 @@
+vyatta-netflow (0.42+vyos1+helium2) unstable; urgency=low
+
+  [ Nikola Krasnoyarsky ]
+  * Ability to set source ip address of netflow packets
+
+  [ Daniil Baturin ]
+  * Bug #325: Add option to configure nfprobe_maxflows (maximum
+    concurrent flows) under netflow
+  * Bug #139: expose pmacct pipe_size option (as 'buffer-size').
+  * Fix unit in buffer-size help.
+
+  [ Alex Harpin ]
+  * vyatta-netflow: allow ipv6 source ip address for netflow packets
+  * vyatta-netflow: formatting changes for style consistency
+  * vyatta-netflow: add 'set system flow-accounting disable-imt' option
+  * vyatta-netflow: ensure plugin buffer size is a factor of pipe size
+
+  [ Daniil Baturin ]
+
+ -- Daniil Baturin <daniil@baturin.org>  Thu, 05 Oct 2017 14:55:16 +0200
+
 vyatta-netflow (0.42+vyos1+helium1) unstable; urgency=low
 
   * New branch
