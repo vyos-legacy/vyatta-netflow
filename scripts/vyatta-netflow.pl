@@ -39,18 +39,18 @@ use strict;
 my $def_nf_port = 2055;
 my $def_sf_port = 6343;
 
-# Default ULOG table/chain
+# Default NFLOG table/chain
 # There is some debate about whether we should hook into netfilter
 # very early (raw, PRE_ROUTING) or late (filter, VYATTA_POST_FW_FWD_HOOK)
 # For a default we will choose "early" - change it to "late" to use
 # the other table/chain.
 my $table_chain_entry = "early";
 
-# ULOG tuning parameters
-my $ulog_cprange    = 64;  # number of bytes of the packet copied to ULOG
-my $ulog_qthreshold = 10;  # number of packets to batch to ULOG
-my $ulog_nl_sz      = (2 * 1024 * 1024);
-my $ulog_nl_buf     = (32 * 1024);
+# NFLOG tuning parameters
+my $nflog_range    = 64;  # number of bytes of the packet copied to NFLOG
+my $nflog_threshold = 10;  # number of packets to batch to NFLOG
+my $nflog_nl_sz      = (2 * 1024 * 1024);
+my $nflog_nl_buf     = (32 * 1024);
 my $mempools	    = 169; # number of memory pool descriptors
 
 #  (169+1) * sizeof(struct memory_pool_desc) = 4K
@@ -90,8 +90,8 @@ sub acct_conf_globals {
     $output .= "imt_path:  $pipe_file\n";
     $output .= "imt_mem_pools_number: $mempools\n";
     $output .= "uacctd_group: 2\n";
-    $output .= "uacctd_nl_size: $ulog_nl_sz\n";
-    $output .= "snaplen: $ulog_nl_buf\n";
+    $output .= "uacctd_nl_size: $nflog_nl_sz\n";
+    $output .= "snaplen: $nflog_nl_buf\n";
     $output .= "refresh_maps: true\n";
     $output .= "pre_tag_map: /etc/pmacct/int_map\n";
     $output .= "aggregate: tag,src_mac,dst_mac,vlan,src_host,dst_host";
@@ -325,17 +325,17 @@ sub acct_get_config {
     return $output;
 }
 
-sub acct_add_ulog_target {
+sub acct_add_nflog_target {
     my ($intf) = @_;
 
     my ($table_chain) = acct_get_table_chain();
     while (my ($chain, $table) = each(%$table_chain)) {
-        my $cmd = "iptables -t $table -I $chain 1 -i $intf -j ULOG" ." --ulog-nlgroup 2";
-        if (defined $ulog_cprange) {
-            $cmd .= " --ulog-cprange $ulog_cprange";
+        my $cmd = "iptables -t $table -I $chain 1 -i $intf -j NFLOG" ." --nflog-group 2";
+        if (defined $nflog_range) {
+            $cmd .= " --nflog-range $nflog_range";
         }
-        if (defined $ulog_qthreshold) {
-            $cmd .= " --ulog-qthreshold $ulog_qthreshold";
+        if (defined $nflog_threshold) {
+            $cmd .= " --nflog-threshold $nflog_threshold";
         }
         my $ret = system($cmd);
         if ($ret >> 8) {
@@ -344,7 +344,7 @@ sub acct_add_ulog_target {
     }
 }
 
-sub acct_rm_ulog_target {
+sub acct_rm_nflog_target {
     my ($intf) = @_;
 
     my ($table_chain) = acct_get_table_chain();
@@ -352,7 +352,7 @@ sub acct_rm_ulog_target {
         my $cmd = "iptables -t $table -vnL $chain --line";
         my @lines = `$cmd 2> /dev/null | egrep ^[0-9]`;
         if (scalar(@lines) < 1) {
-            die "Error: failed to find ULOG entry for $chain => $table\n";
+            die "Error: failed to find NFLOG entry for $chain => $table\n";
         }
         my $found_target = 'false';
         foreach my $line (@lines) {
@@ -405,7 +405,7 @@ if ($action eq 'add-intf') {
     print "Warning : interface [$intf] does not exist on system\n"
         if !defined $interface;
     acct_log("update [$intf]");
-    acct_add_ulog_target($intf);
+    acct_add_nflog_target($intf);
     print "Adding flow-accounting for [$intf]\n";
     exit 0;
 }
@@ -413,7 +413,7 @@ if ($action eq 'add-intf') {
 if ($action eq 'del-intf') {
     die "Error: must include interface\n" if !defined $intf;
     acct_log("stop [$intf]");
-    acct_rm_ulog_target($intf);
+    acct_rm_nflog_target($intf);
     print "Removing flow-accounting for [$intf]\n";
     exit 0;
 }

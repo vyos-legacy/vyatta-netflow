@@ -11,7 +11,7 @@ Depends: perl,
  vyatta-cfg,
  vyatta-cfg-system,
  vyatta-op,
- pmacct (>= 0.14.0)
+ pmacct (>= 1.6.0)
 Description: VyOS commands for netflow
  VyOS configuration/operational templates and scripts for the netflow/sflow
  system (pmacct).
