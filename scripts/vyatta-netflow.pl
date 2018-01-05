@@ -168,14 +168,14 @@ sub acct_get_netflow {
     foreach my $name (@names) {
         my $server_port = $name;
         $server_port    =~ s/-/:/;
-        $output .= "nfprobe_receiver[$name]: $server_port\n";
-        $output .= "nfprobe_version[$name]: $version\n" if defined $version;
-        $output .= "nfprobe_source_ip[$name]: $source_ip\n" if defined $source_ip;
-        $output .= "nfprobe_engine[$name]: $engine_id:0\n";
-        $output .= "nfprobe_timeouts[$name]: $timeout_str\n"
+        $output .= "nfprobe_receiver: $server_port\n";
+        $output .= "nfprobe_version: $version\n" if defined $version;
+        $output .= "nfprobe_source_ip: $source_ip\n" if defined $source_ip;
+        $output .= "nfprobe_engine: $engine_id:0\n";
+        $output .= "nfprobe_timeouts: $timeout_str\n"
             if $timeout_str ne '';
-        $output .= "nfprobe_maxflows[$name]: $maxflows\n" if defined $maxflows;
-        $output .= "sampling_rate[$name]: $sampling\n" if defined $sampling;
+        $output .= "nfprobe_maxflows: $maxflows\n" if defined $maxflows;
+        $output .= "sampling_rate: $sampling\n" if defined $sampling;
     }
     return $output;
 }
@@ -265,10 +265,10 @@ sub acct_get_sflow {
     foreach my $name (@names) {
         my $server_port = $name;
         $server_port    =~ s/-/:/;
-        $output .= "sfprobe_receiver[$name]: $server_port\n";
-        $output .= "sfprobe_agentip[$name]: $agent_ip\n" if $agent_ip;
-        $output .= "sfprobe_agentsubid[$name]: $agent\n" if $agent;
-        $output .= "sampling_rate[$name]: $sampling\n" if defined $sampling;
+        $output .= "sfprobe_receiver: $server_port\n";
+        $output .= "sfprobe_agentip: $agent_ip\n" if $agent_ip;
+        $output .= "sfprobe_agentsubid: $agent\n" if $agent;
+        $output .= "sampling_rate: $sampling\n" if defined $sampling;
     }
 
     return $output;
@@ -296,9 +296,9 @@ sub acct_get_config {
         my @names = acct_get_collector_names($config, 'netflow');
         foreach my $name (@names) {
             if ($plugins eq '') {
-                $plugins .= "plugins: nfprobe[$name]";
+                $plugins .= "plugins: nfprobe";
             } else {
-                $plugins .= ",nfprobe[$name]";
+                $plugins .= ",nfprobe";
             }
         }
     }
@@ -308,9 +308,9 @@ sub acct_get_config {
         my @names = acct_get_collector_names($config, 'sflow');
         foreach my $name (@names) {
             if ($plugins eq '') {
-                $plugins .= "sfprobe[$name]";
+                $plugins .= "sfprobe";
             } else {
-                $plugins .= ",sfprobe[$name]";
+                $plugins .= ",sfprobe";
             }
         }
     }
