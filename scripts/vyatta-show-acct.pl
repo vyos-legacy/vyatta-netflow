@@ -73,7 +73,7 @@ sub display_lines {
     my $count = 0;
     my ($tot_flows, $tot_pkts, $tot_bytes) = (0, 0, 0);
     foreach my $line (@lines) {
-        my ($tag, $tag2, $class, $in_iface, $out_iface, $src_mac, $dst_mac,$vlan, $cos, $etype, $src_as, $dst_as, $bgp_comms, $src_bgp_comms,$as_path, $src_as_path, $pref, $src_pref, $med, $src_med, $sym,$peer_src_as, $peer_dst_as, $peer_src_ip, $peer_dst_ip,$src_ip, $dst_ip, $src_mask, $dst_mask, $sport, $dport,$tcp_flags, $proto, $tos, $pkts, $flows, $bytes)= split(/\s+/, $line);
+        my ($tag, $src_mac, $dst_mac, $vlan, $src_ip, $dst_ip, $sport, $dport, $proto, $tos, $pkts, $flows, $bytes)= split(/\s+/, $line);
         next if !defined $src_ip or $src_ip !~ m/\d+\.\d+\.\d+\.\d+/;
         next if defined $ifindx and $ifindx ne $tag;
         $count++;
@@ -81,7 +81,7 @@ sub display_lines {
         $tot_pkts  += $pkts;
         $tot_bytes += $bytes;
         if ($topN != 0) {
-            printf($format,$src_ip, $dst_ip, $sport, $dport, $proto,$pkts, $bytes, $flows);
+            printf($format, $src_ip, $dst_ip, $sport, $dport, $proto, $pkts, $bytes, $flows);
         }
         last if $topN != 0 and $count >= $topN;
     }
@@ -96,7 +96,7 @@ sub show_acct {
 
     print "flow-accounting for [$intf]\n";
     my $pipe_file = acct_get_pipe_file();
-    my @lines = `$pmacct -a -p $pipe_file -s -T bytes`;
+    my @lines = `$pmacct -p $pipe_file -s -T bytes`;
     display_lines($intf, $topN, @lines);
 }
 
@@ -104,8 +104,8 @@ sub show_acct_host {
     my ($intf, $host) = @_;
 
     my $pipe_file = acct_get_pipe_file($intf);
-    my @slines = `$pmacct -a -p $pipe_file -c src_host -M $host -T bytes`;
-    my @dlines = `$pmacct -a -p $pipe_file -c dst_host -M $host -T bytes`;
+    my @slines = `$pmacct -p $pipe_file -c src_host -M $host -T bytes`;
+    my @dlines = `$pmacct -p $pipe_file -c dst_host -M $host -T bytes`;
     display_lines($intf, undef, @slines,@dlines);
 }
 
@@ -113,8 +113,8 @@ sub show_acct_port {
     my ($intf, $port) = @_;
 
     my $pipe_file = acct_get_pipe_file($intf);
-    my @slines = `$pmacct -a -p $pipe_file -c src_port -M $port -T bytes`;
-    my @dlines = `$pmacct -a -p $pipe_file -c dst_port -M $port -T bytes`;
+    my @slines = `$pmacct -p $pipe_file -c src_port -M $port -T bytes`;
+    my @dlines = `$pmacct -p $pipe_file -c dst_port -M $port -T bytes`;
     display_lines($intf, undef, @slines,@dlines);
 }
 
