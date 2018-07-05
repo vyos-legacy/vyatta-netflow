@@ -1,0 +1,11 @@
+type: txt
+
+help: Generate ASN from file or BGP thread
+
+syntax:expression: $VAR(@) in "false", "file", "bgp" ; "must be false, file, or bgp."
+
+default: "false"
+
+val_help: false ; disable ASN generation
+val_help: file ; generate ASNs by using a networks_file pointing to a valid Networks File 
+val_help: bgp ; generate ASNs from the uacctd BGP thread

@@ -97,9 +97,12 @@ sub acct_conf_globals {
     $output .= "aggregate: tag,src_mac,dst_mac,vlan,src_host,dst_host";
     $output .= ",src_port,dst_port,proto,tos,flows";
 
-    if (-e '/etc/pmacct/networks.lst') {
+    my $uacctd_as = $config->returnValue('system flow-accounting generate-asn');
+
+    if (defined $uacctd_as) {
         $output .= ",src_as,dst_as\n";
-        $output .= "networks_file: /etc/pmacct/networks.lst\n";
+	$output .= "uacctd_as: $uacctd_as\n";
+	$output .= $uacctd_as eq 'file' ? "networks_file: /etc/pmacct/networks.lst\n" : "bgp_daemon: true\nbgp_agent_map: /etc/pmacct/agent_to_peer.map\n" 
     } else {
         $output .= "\n";
     }
@@ -274,6 +277,27 @@ sub acct_get_sflow {
     return $output;
 }
 
+sub acct_get_bgp_daemon {
+    my ($config) = @_;
+
+    my $path   = 'system flow-accounting';
+    my $output = undef;
+
+    $config->setLevel($path);
+    return $output if !$config->exists('bgp-daemon');
+
+    $config->setLevel("$path bgp-daemon");
+    my $bgp_ip   = $config->returnValue('ip');
+    my $bgp_port = $config->returnValue('port');
+    my $bgp_max_peers = $config->returnValue('max-peers');
+
+    $output .= "bgp_daemon_ip: $bgp_ip\n" if defined $bgp_ip;
+    $output .= "bgp_daemon_port: $bgp_port\n" if defined $bgp_port;
+    $output .= "bgp_daemon_max_peers: $bgp_max_peers\n" if defined $bgp_max_peers;
+
+    return $output 
+}
+
 sub acct_get_config {
 
     my $config = new Vyatta::Config;
@@ -285,6 +309,9 @@ sub acct_get_config {
     $config->setLevel($path);
     my $facility = $config->returnValue('syslog-facility');
     $output .= "syslog: $facility\n" if defined $facility;
+
+    my $bgp_daemon = acct_get_bgp_daemon($config);
+    $output .= $bgp_daemon if defined $bgp_daemon;
 
     my $plugins = '';
     if (!defined($config->returnValue('disable-imt'))) {
@@ -322,6 +349,7 @@ sub acct_get_config {
     $output .= "$plugins\n";
     $output .= $netflow if defined $netflow;
     $output .= $sflow   if defined $sflow;
+
     return $output;
 }
 
@@ -386,6 +414,19 @@ sub acct_get_int_map {
     return $output;
 }
 
+sub acct_get_bgp_agent_map {
+    my ($config) = @_;
+    my $output = undef;
+    $config->setLevel('system flow-accounting bgp-daemon neighbors');
+    
+    my @neighbors = $config->returnValues();
+    if (scalar(@neighbors) > 0) {
+	foreach my $neighbor (@neighbors) {
+    	    $output .= "bgp_ip=$neighbor\tip=0.0.0.0/0\n";
+        }
+    }
+    return $output
+}
 #
 # main
 #
@@ -425,6 +466,9 @@ if ($action eq 'update') {
     $config->setLevel('system flow-accounting interface');
     my @interfaces = $config->returnValues();
     my $conf_file = acct_get_conf_file();
+    my $map_bgp_agent = acct_get_bgp_agent_map($config);
+    acct_write_file('/etc/pmacct/agent_to_peer.map', $map_bgp_agent) if defined $map_bgp_agent;
+
     if (scalar(@interfaces) > 0) {
         my $map_conf = acct_get_int_map(@interfaces);
         my $map_changed = acct_write_file('/etc/pmacct/int_map', $map_conf);

@@ -1,0 +1,4 @@
+type: txt
+help: Binds the BGP daemon to a port different from the standard BGP port: 179/tcp.
+val_help: 1-65535; Numeric IP port
+syntax:expression: exec "${vyos_libexec_dir}/validate-value.py  --exec \"${vyos_validators_dir}/numeric --range 1-65535\" --value \'$VAR(@)\'"; "Invalid value" 

@@ -1,0 +1,9 @@
+multi:
+
+type: txt
+
+help: specify BGP neighbors. it is necessary only for generate valid agent_to_peer.map 
+
+val_help: ipv4; IPv4 address of bgp-peer
+
+syntax:expression: exec "${vyos_libexec_dir}/validate-value.py  --exec \"${vyos_validators_dir}/ipv4-address \"  --value \'$VAR(@)\'"; "Invalid value" 
