@@ -2,7 +2,7 @@ type: txt
 
 help: Generate ASN from file or BGP thread
 
-syntax:expression: $VAR(@) "file", "bgp" ; "must be file or bgp."
+syntax:expression: $VAR(@) in "file", "bgp" ; "must be file or bgp."
 
 val_help: file ; generate ASNs by using a networks_file pointing to a valid Networks File 
 val_help: bgp ; generate ASNs from the uacctd BGP thread
