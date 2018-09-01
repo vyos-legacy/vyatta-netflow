@@ -47,10 +47,12 @@ my $def_sf_port = 6343;
 my $table_chain_entry = "early";
 
 # NFLOG tuning parameters
-my $nflog_range    = 64;  # number of bytes of the packet copied to NFLOG
+#
+# see http://wiki.pmacct.net/OfficialConfigKeys
+my $nflog_range     = 64;  # number of bytes of the packet copied to NFLOG
 my $nflog_threshold = 10;  # number of packets to batch to NFLOG
-my $nflog_nl_sz      = (2 * 1024 * 1024);
-my $nflog_nl_buf     = (32 * 1024);
+my $nflog_nl_sz     = (2 * 1024 * 1024);
+my $nflog_nl_buf    = (4 * 1024); # 4KB, which is the default value
 my $mempools	    = 169; # number of memory pool descriptors
 
 #  (169+1) * sizeof(struct memory_pool_desc) = 4K
