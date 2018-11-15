@@ -290,7 +290,7 @@ sub acct_get_config {
 
     my $plugins = '';
     
-    if ( $config->exists('disable-imt') )
+    if ( ! $config->exists('disable-imt') )
     {
       $plugins = 'plugins: memory';
     }    
