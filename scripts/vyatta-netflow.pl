@@ -289,9 +289,11 @@ sub acct_get_config {
     $output .= "syslog: $facility\n" if defined $facility;
 
     my $plugins = '';
-    if (!defined($config->returnValue('disable-imt'))) {
-        $plugins = 'plugins: memory';
-    }
+    
+    if ( ! $config->exists('disable-imt') )
+    {
+      $plugins = 'plugins: memory';
+    }    
 
     my $netflow = acct_get_netflow($config);
     if (defined $netflow) {
