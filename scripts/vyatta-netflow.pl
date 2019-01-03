@@ -173,7 +173,7 @@ sub acct_get_netflow {
         $output .= "nfprobe_receiver: $server_port\n";
         $output .= "nfprobe_version: $version\n" if defined $version;
         $output .= "nfprobe_source_ip: $source_ip\n" if defined $source_ip;
-        $output .= "nfprobe_engine: $engine_id:0\n";
+        $output .= "nfprobe_engine: $engine_id:0\n" if $version ne '9';;
         $output .= "nfprobe_timeouts: $timeout_str\n"
             if $timeout_str ne '';
         $output .= "nfprobe_maxflows: $maxflows\n" if defined $maxflows;
