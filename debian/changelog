@@ -1,3 +1,9 @@
+vyatta-netflow (1.2.0-1) unstable; urgency=medium
+
+  * New release.
+
+ -- Daniil Baturin <daniil@baturin.org>  Sat, 26 Jan 2019 23:32:13 +0100
+
 vyatta-netflow (0.42+vyos2+current2) unstable; urgency=medium
 
   * T458: bugfix - Disabling the in-memory table plugin has no effect
