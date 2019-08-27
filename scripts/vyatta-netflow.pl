@@ -63,14 +63,28 @@ my $default_pipe_size = 10; # 10 MiB
 sub acct_get_table_chain {
     my %chain_table = ();
     if ($table_chain_entry eq "early") {
-        %chain_table = ("VYATTA_CT_PREROUTING_HOOK" => "raw");
+        %chain_table = (
+            "ipv4" => {
+                "VYATTA_CT_PREROUTING_HOOK" => "raw",
+            },
+            "ipv6" => {
+                "VYATTA_CT_PREROUTING_HOOK" => "raw",
+            },
+        );
     } else {
         %chain_table = (
-            "VYATTA_POST_FW_IN_HOOK"  => "filter",
-            "VYATTA_POST_FW_FWD_HOOK" => "filter"
+            "ipv4" => {
+                "VYATTA_POST_FW_IN_HOOK" => "filter",
+                "VYATTA_POST_FW_FWD_HOOK" => "filter",
+            },
+            "ipv6" => {
+                "VYATTA_POST_FW_IN_HOOK" => "filter",
+                "VYATTA_POST_FW_FWD_HOOK" => "filter",
+            },
         );
     }
-    return (\%chain_table);
+
+    return %chain_table;
 }
 
 sub acct_conf_globals {
@@ -173,7 +187,7 @@ sub acct_get_netflow {
         $output .= "nfprobe_receiver: $server_port\n";
         $output .= "nfprobe_version: $version\n" if defined $version;
         $output .= "nfprobe_source_ip: $source_ip\n" if defined $source_ip;
-        $output .= "nfprobe_engine: $engine_id:0\n" if $version ne '9';;
+        $output .= "nfprobe_engine: $engine_id:0\n" if $version == '5';
         $output .= "nfprobe_timeouts: $timeout_str\n"
             if $timeout_str ne '';
         $output .= "nfprobe_maxflows: $maxflows\n" if defined $maxflows;
@@ -332,46 +346,96 @@ sub acct_get_config {
 sub acct_add_nflog_target {
     my ($intf) = @_;
 
-    my ($table_chain) = acct_get_table_chain();
-    while (my ($chain, $table) = each(%$table_chain)) {
-        my $cmd = "iptables -t $table -I $chain 1 -i $intf -j NFLOG" ." --nflog-group 2";
-        if (defined $nflog_range) {
-            $cmd .= " --nflog-range $nflog_range";
+    my %table_chain = acct_get_table_chain();
+    foreach my $ip_proto ( keys %table_chain ) {
+        my $iptables_cmd;
+        if ( $ip_proto eq "ipv4" ) {
+            $iptables_cmd = "iptables";
         }
-        if (defined $nflog_threshold) {
-            $cmd .= " --nflog-threshold $nflog_threshold";
+        elsif ( $ip_proto eq "ipv6" ) {
+            $iptables_cmd = "ip6tables";
         }
-        my $ret = system($cmd);
-        if ($ret >> 8) {
-            die "Error: [$cmd] failed - $?\n";
+        else {
+            die "Wrong or not provided IP protocol in acct_get_table_chain()!";
+        }
+
+        for my $chain ( keys %{ $table_chain{$ip_proto} } ) {
+            my $cmd = "$iptables_cmd -t $table_chain{$ip_proto}{$chain} -I $chain 1 -i $intf -j NFLOG" ." --nflog-group 2";
+            if (defined $nflog_range) {
+                $cmd .= " --nflog-range $nflog_range";
+            }
+            if (defined $nflog_threshold) {
+                $cmd .= " --nflog-threshold $nflog_threshold";
+            }
+            my $ret = system($cmd);
+            if ($ret >> 8) {
+                die "Error: [$cmd] failed - $?\n";
+            }
         }
     }
+}
+
+# get iptables rule dict for chain in table
+sub iptables_chain_get {
+    my ($proto, $table, $chain_name) = @_;
+    # define hash with rules, iptables command and empty parser pattern
+    my (%rules, $iptables_command, $rule_pattern);
+
+    # tune variables for IP protocol (regex and command)
+    if ( $proto eq "ipv4" ) {
+        $iptables_command = "iptables -t $table -L $chain_name -n -v -x --line-numbers";
+        $rule_pattern = '^(?P<num>\d+) +(?P<pkts>\d+) +(?P<bytes>\d+) +(?P<target>[\w\-]+) +(?P<prot>\w+) +(?P<opt>[\w\-]+) +(?P<in>[\w\.\*\-]+) +(?P<out>[\w\.\*\-]+) +(?P<source>[\w\.\:\/]+) +(?P<destination>[\w\.\:\/]+) +(?P<details>.*)$';
+    }
+    if ( $proto eq "ipv6" ) {
+        $iptables_command = "ip6tables -t $table -L $chain_name -n -v -x --line-numbers";
+        $rule_pattern = '^(?P<num>\d+) +(?P<pkts>\d+) +(?P<bytes>\d+) +(?P<target>[\w\-]+) +(?P<prot>\w+) +(?P<in>[\w\.\*\-]+) +(?P<out>[\w\.\*\-]+) +(?P<source>[\w\.\:\/]+) +(?P<destination>[\w\.\:\/]+) +(?P<details>.*)$';
+    }
+
+    # run iptables, save output
+    my @iptables_out = `$iptables_command`;
+
+    # parse each line and add information to hash
+    foreach my $current_rule (@iptables_out) {
+        $rules{$+{num}} = { %+ } if ( $current_rule =~ /$rule_pattern/ );
+    }
+
+    # return hash with rule numbers as keys and information as values
+    return %rules;
 }
 
 sub acct_rm_nflog_target {
     my ($intf) = @_;
 
-    my ($table_chain) = acct_get_table_chain();
-    while (my ($chain, $table) = each(%$table_chain)) {
-        my $cmd = "iptables -t $table -vnL $chain --line";
-        my @lines = `$cmd 2> /dev/null | egrep ^[0-9]`;
-        if (scalar(@lines) < 1) {
-            die "Error: failed to find NFLOG entry for $chain => $table\n";
+    my %table_chain = acct_get_table_chain();
+    foreach my $ip_proto ( keys %table_chain ) {
+        my $iptables_cmd;
+        if ( $ip_proto eq "ipv4" ) {
+            $iptables_cmd = "iptables";
         }
-        my $found_target = 'false';
-        foreach my $line (@lines) {
-            my ($num, undef, undef, $target, undef, undef, $in) = split /\s+/, $line;
-            if (defined $in and $in eq $intf) {
-                $cmd = "iptables -t $table -D $chain $num";
-                my $ret = system($cmd);
-                if ($ret >> 8) {
-                    die "Error: failed to delete target - $?\n";
+        elsif ( $ip_proto eq "ipv6" ) {
+            $iptables_cmd = "ip6tables";
+        }
+        else {
+            die "Wrong or not provided IP protocol in acct_get_table_chain()!";
+        }
+
+        for my $chain ( keys %{ $table_chain{$ip_proto} } ) {
+            my %rules_list = iptables_chain_get($ip_proto, $table_chain{$ip_proto}{$chain}, $chain);
+
+            my $found_target;
+            foreach my $rule ( keys %rules_list ) {
+                if ( $rules_list{$rule}{"target"} eq "NFLOG" and $rules_list{$rule}{"in"} eq $intf ) {
+                    my $cmd = "$iptables_cmd -t $table_chain{$ip_proto}{$chain} -D $chain $rule";
+                    my $ret = system($cmd);
+                    if ($ret >> 8) {
+                        die "Error: failed to delete target - $?\n";
+                    }
+                    $found_target = 'true';
+                    last;
                 }
-                $found_target = 'true';
-                last;
             }
+            die "Error: failed to find target\n" if not $found_target;
         }
-        die "Error: failed to find target\n" if $found_target eq 'false';
     }
 }
 

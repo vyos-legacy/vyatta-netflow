@@ -2,10 +2,10 @@ type: txt
 
 help: NetFlow version to export
 
-syntax:expression: $VAR(@) in "1", "5", "9" ; "Version must be 1, 5, or 9."
+syntax:expression: $VAR(@) in "5", "9", "10" ; "Version must be 5, 9, or 10."
 
-default: "5"
+default: "9"
 
-val_help: 1 ; NetFlow version 1
-val_help: 5 ; NetFlow version 5 (default)
-val_help: 9 ; NetFlow version 9
+val_help: 5 ; NetFlow version 5
+val_help: 9 ; NetFlow version 9 (default)
+val_help: 10 ; IPFIX

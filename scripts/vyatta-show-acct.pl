@@ -72,16 +72,16 @@ sub display_lines {
     }
     my $count = 0;
     my ($tot_flows, $tot_pkts, $tot_bytes) = (0, 0, 0);
+    my $regex_pattern = '^(?P<tag>\d+) +(?P<src_mac>([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F])) +(?P<dst_mac>([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F])) +(?P<vlan>\d+) +(?P<src_ip>[\w\.\:\/]+) +(?P<dst_ip>[\w\.\:\/]+) +(?P<src_port>\d+) +(?P<dst_port>\d+) +(?P<protocol>[\d\w-]+) +(?P<tos>\d+) +(?P<packets>\d+) +(?P<flows>\d+) +(?P<bytes>\d+)$';
     foreach my $line (@lines) {
-        my ($tag, $src_mac, $dst_mac, $vlan, $src_ip, $dst_ip, $sport, $dport, $proto, $tos, $pkts, $flows, $bytes)= split(/\s+/, $line);
-        next if !defined $src_ip or $src_ip !~ m/\d+\.\d+\.\d+\.\d+/;
-        next if defined $ifindx and $ifindx ne $tag;
-        $count++;
-        $tot_flows += $flows;
-        $tot_pkts  += $pkts;
-        $tot_bytes += $bytes;
-        if ($topN != 0) {
-            printf($format, $src_ip, $dst_ip, $sport, $dport, $proto, $pkts, $bytes, $flows);
+        if ($line =~ /$regex_pattern/ and $ifindx eq $+{"tag"}) {
+            $count++;
+            $tot_flows += $+{"flows"};
+            $tot_pkts  += $+{"packets"};
+            $tot_bytes += $+{"bytes"};
+            if ($topN != 0) {
+                printf($format, $+{"src_ip"}, $+{"dst_ip"}, $+{"src_port"}, $+{"dst_port"}, $+{"protocol"}, $+{"packets"}, $+{"bytes"}, $+{"flows"});
+            }
         }
         last if $topN != 0 and $count >= $topN;
     }
