@@ -326,7 +326,7 @@ sub acct_get_config {
         my @names = acct_get_collector_names($config, 'sflow');
         foreach my $name (@names) {
             if ($plugins eq '') {
-                $plugins .= "sfprobe";
+                $plugins .= "plugins: sfprobe";
             } else {
                 $plugins .= ",sfprobe";
             }
