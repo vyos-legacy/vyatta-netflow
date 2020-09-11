@@ -1,3 +1,9 @@
+vyatta-netflow (1.2.6) unstable; urgency=low
+
+  * New release.
+
+ -- VyOS maintainers <maintainers@vyos.io>  Fri, 11 Sep 2020 04:34:16 +0300
+
 vyatta-netflow (1.2.5) unstable; urgency=low
 
   * New release.
